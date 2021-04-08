@@ -6,10 +6,6 @@
 
 #include "Message.h"
 
-#define MSG_START_C '{'
-#define MSG_END_C '}'
-#define MSG_SEP_C ';'
-
 #define DEFAULT_CH 0
 
 class RadioDevice

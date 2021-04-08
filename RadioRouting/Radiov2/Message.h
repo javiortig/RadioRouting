@@ -2,6 +2,13 @@
 
 #include <iostream>
 #include <vector>
+#include <math.h>
+#include <bits/stdc++.h>
+
+#define MSG_START_C '{'
+#define MSG_END_C '}'
+#define MSG_SEP_C ';'
+#define MSG_CMD_C '='
 
 class Message
 {
@@ -22,14 +29,25 @@ class Message
             this->command = command;
             this->value = value;
         }
+
+        void print()
+        {
+            std::cout << this->command << MSG_CMD_C << this->value << MSG_SEP_C;
+        }
     };
+
+private:
+    static int _reverseNumber(int num);
+    static std::vector<std::string> _chopString(std::string str, char sep);
 
 public:
     int len;
     std::vector<Instruction> instructions;
     time_t time;
 
-    Message strToMessage(char *str);
+    static Message strToMessage(std::string str);
+
+    void print();
 
     Message();
     Message(std::vector<Instruction> instructions);
