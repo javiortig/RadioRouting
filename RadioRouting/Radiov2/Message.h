@@ -9,7 +9,7 @@
 #define MSG_START_C '{'
 #define MSG_END_C '}'
 #define MSG_SEP_C ';'
-#define MSG_CMD_C '='
+#define MSG_CMD_SEP_C '='
 
 #define SYN_CMD "SYN"
 #define SYNACK_CMD "SAK"
@@ -41,7 +41,7 @@ struct Instruction
 
     void print()
     {
-        std::cout << this->command << MSG_CMD_C << this->value << MSG_SEP_C;
+        std::cout << this->command << MSG_CMD_SEP_C << this->value << MSG_SEP_C;
     }
 };
 
@@ -55,13 +55,14 @@ private:
 
 public:
     //Attributes:
-    int id;
+    std::string id;
     std::vector<Instruction> instructions;
     time_t time;
 
     //Methods:
     bool isEmpty();
     static Message strToMessage(std::string str);
+    static std::string messageToString(Message &message);
     void print();
     Instruction getInstruction(std::string command);
     //Returns index of instruction in the msg or -1
@@ -69,7 +70,9 @@ public:
     //Same as search, but only returns true or false if match
     bool hasInstruction(std::string command);
 
-    Message();
+    int length();
+
     Message(std::vector<Instruction> instructions);
     Message(std::string messageStr);
+    Message(){};
 };

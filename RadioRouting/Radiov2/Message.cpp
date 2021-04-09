@@ -1,10 +1,5 @@
 #include "Message.h"
 
-Message::Message()
-{
-    this->instructions = std::vector<Instruction>();
-}
-
 Message::Message(std::vector<Instruction> instructions)
 {
     this->instructions = instructions;
@@ -94,7 +89,7 @@ Message Message::strToMessage(std::string str)
     std::vector<Instruction> instructions;
     for (int i = 2; i < v.size(); i++)
     {
-        std::vector<std::string> slice = _chopString(v[i], MSG_CMD_C);
+        std::vector<std::string> slice = _chopString(v[i], MSG_SEP_C);
         if (slice.size() != 2)
         {
 #ifdef DEBUG
@@ -122,6 +117,26 @@ Message Message::strToMessage(std::string str)
     //set the result message and return it
     result.instructions = instructions;
     result.time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    return result;
+}
+
+std::string Message::messageToString(Message &message)
+{
+    if (message.isEmpty())
+        return "";
+
+    std::string result = "";
+    result = MSG_START_C + std::to_string(message.length()) + MSG_SEP_C +
+             message.id;
+
+    for (int i = 0; i < message.instructions.size(); i++)
+    {
+        result += MSG_CMD_SEP_C + message.instructions[i].command +
+                  MSG_CMD_SEP_C + message.instructions[i].value;
+    }
+
+    result += MSG_END_C;
+
     return result;
 }
 
@@ -161,8 +176,28 @@ bool Message::hasInstruction(std::string command)
     return (this->searchInstructionByIndex(command) >= 0) ? true : false;
 }
 
-bool _isNumber(const std::string &s)
+bool Message::_isNumber(const std::string &s)
 {
     return !s.empty() && std::find_if(s.begin(),
                                       s.end(), [](unsigned char c) { return !std::isdigit(c); }) == s.end();
+}
+
+int Message::length()
+{
+    if (this->isEmpty())
+        return -1;
+
+    int result = 3; //adds the {} and the 1st ;
+
+    result += this->id.length();
+
+    //for each command adds the ;C=V
+    for (int i = 0; i < this->instructions.size(); i++)
+        result += this->instructions[i].command.length() + this->instructions[i].value.length() + 2;
+
+    //Adds the digits itself
+    int lenDigitCount = static_cast<int>(log10(result)) + 1;
+    result += static_cast<int>(log10(lenDigitCount + result)) + 1;
+
+    return result;
 }

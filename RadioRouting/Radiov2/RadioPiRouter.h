@@ -10,14 +10,14 @@
 
 struct StationValue
 {
-    int channel;
+    std::string id;
     Message lastMessage;
 };
 
 class RadioPiRouter : public RadioDevice
 {
 private:
-    //The id of the device is the key
+    //The channel of the device is the key
     std::map<int, StationValue> stations;
 
     bool _listenForNewStations();

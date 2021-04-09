@@ -24,9 +24,12 @@ bool RadioPiRouter::_TWH()
         // check if received a SYN command and id matches
         if (!this->buffer.isEmpty() && this->buffer.hasInstruction(SYN_CMD))
         {
-            //TODO: comprobar que el id del current channel coincida
-            if (this->buffer.id ==)
+            //Check that id matches
+            if (this->stations[this->currentChannel].id == this->buffer.id)
+            {
                 synFlag = true;
+                break;
+            }
         }
 
         //Check if timeout
@@ -41,4 +44,7 @@ bool RadioPiRouter::_TWH()
     } while (!synFlag);
 
     // send SYN ACK
+    // sendMessage(MSG_START_C + "15")
 }
+
+// {15;ROUTER;SAK}

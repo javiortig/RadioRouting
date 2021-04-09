@@ -6,14 +6,15 @@
 
 #include "Message.h"
 
-#define MAIN_ROUTER_ID 0
+#define MAIN_ROUTER_ID "ROUTER"
+
 #define DEFAULT_CH 0
 
 class RadioDevice
 {
 protected:
     int currentChannel;
-    int id;
+    std::string id; //Has to be unique in the network
     Message buffer;
 
     virtual void _startHC12() = 0;
