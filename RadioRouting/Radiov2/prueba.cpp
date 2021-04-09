@@ -2,57 +2,26 @@
 #include <iostream>
 #include <vector>
 #include <bits/stdc++.h>
+#include <unistd.h>
 
 #include "Message.h"
 
-// Example: {len;command...}
-
-struct Instruction
-{
-    std::string command;
-    std::string value;
-
-    Instruction()
-    {
-        this->command = nullptr;
-        this->value = nullptr;
-    }
-
-    template <class C, class V>
-    Instruction(C command, V value)
-    {
-        this->command = command;
-        this->value = value;
-    }
-
-    void print()
-    {
-        std::cout << this->command << MSG_CMD_C << this->value << MSG_SEP_C;
-    }
-};
-
-std::vector<std::string> chopString(std::string str, char sep)
-{
-    //Chop message
-    std::vector<std::string> result;
-    std::stringstream ss(str);
-
-    while (ss.good())
-    {
-        std::string substr;
-        std::getline(ss, substr, sep);
-        result.push_back(substr);
-    }
-
-    return result;
-}
+// Example: {len;id;command...}
 
 int main()
 {
-    std::string str = "_{7;a=1}";
+    auto start = std::chrono::system_clock::now();
 
-    Message m = Message::strToMessage(str);
-    std::cout << "Lenn is: " << m.len << std::endl;
-    m.print();
+    sleep(4.12);
+    int j = 0;
+    for (size_t i = 0; i < 10000; i++)
+    {
+        j = i + 1;
+    }
+    auto end = std::chrono::system_clock::now();
+
+    std::chrono::duration<double> elapsed_seconds = end - start;
+
+    std::cout << elapsed_seconds.count() << std::endl;
     return 0;
 }

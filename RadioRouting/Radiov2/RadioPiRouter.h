@@ -2,9 +2,13 @@
 
 #include "RadioDevice.h"
 
+#include <unistd.h>
 //#include <pigpio>
 
-struct Station
+#define THW_WAIT_TIME 10
+#define SMALL_NAP_TIME 1
+
+struct StationValue
 {
     int channel;
     Message lastMessage;
@@ -13,13 +17,15 @@ struct Station
 class RadioPiRouter : public RadioDevice
 {
 private:
-    std::vector<Station> stations;
+    //The id of the device is the key
+    std::map<int, StationValue> stations;
 
     bool _listenForNewStations();
 
+    bool _TWH();
+
 public:
     RadioPiRouter();
-    ~RadioPiRouter();
 
     void routine();
 };

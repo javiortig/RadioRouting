@@ -3,13 +3,16 @@
 Message::Message()
 {
     this->instructions = std::vector<Instruction>();
-    this->len = -1;
-    this->time = -1;
 }
 
 Message::Message(std::vector<Instruction> instructions)
 {
     this->instructions = instructions;
+}
+
+Message::Message(std::string messageStr)
+{
+    *this = Message::strToMessage(messageStr);
 }
 
 std::vector<std::string> Message::_chopString(std::string str, char sep)
@@ -26,6 +29,11 @@ std::vector<std::string> Message::_chopString(std::string str, char sep)
     }
 
     return result;
+}
+
+bool Message::isEmpty()
+{
+    return this->instructions.empty();
 }
 
 Message Message::strToMessage(std::string str)
@@ -52,7 +60,7 @@ Message Message::strToMessage(std::string str)
     std::cout << "--end chop--\n";
 #endif
 
-    if (v.size() <= 1)
+    if (v.size() <= 2)
     {
 #ifdef DEBUG
         std::cout << "Error: msg empty\n";
@@ -69,9 +77,22 @@ Message Message::strToMessage(std::string str)
 #endif
         return Message();
     }
+    //extract id:
+    if (_isNumber(v[1]))
+    {
+        result.id = std::stoi(v[1]);
+    }
+    else
+    {
+#ifdef DEBUG
+        std::cout << "Error: no id provided in msg\n";
+#endif
+        return Message();
+    }
+
     //extract instructions:
     std::vector<Instruction> instructions;
-    for (int i = 1; i < v.size(); i++)
+    for (int i = 2; i < v.size(); i++)
     {
         std::vector<std::string> slice = _chopString(v[i], MSG_CMD_C);
         if (slice.size() != 2)
@@ -100,14 +121,13 @@ Message Message::strToMessage(std::string str)
 
     //set the result message and return it
     result.instructions = instructions;
-    result.len = msgLen;
-
+    result.time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
     return result;
 }
 
 void Message::print()
 {
-    if (this->len < 1)
+    if (this->isEmpty())
         std::cout << std::endl;
     else
     {
@@ -116,4 +136,33 @@ void Message::print()
 
         std::cout << std::endl;
     }
+}
+
+Instruction Message::getInstruction(std::string command)
+{
+    for (int i = 0; i < this->instructions.size(); i++)
+        if (this->instructions[i].command == command)
+            return this->instructions[i];
+
+    return Instruction();
+}
+
+int Message::searchInstructionByIndex(std::string command)
+{
+    for (int i = 0; i < this->instructions.size(); i++)
+        if (instructions[i].command == command)
+            return i;
+
+    return -1;
+}
+
+bool Message::hasInstruction(std::string command)
+{
+    return (this->searchInstructionByIndex(command) >= 0) ? true : false;
+}
+
+bool _isNumber(const std::string &s)
+{
+    return !s.empty() && std::find_if(s.begin(),
+                                      s.end(), [](unsigned char c) { return !std::isdigit(c); }) == s.end();
 }

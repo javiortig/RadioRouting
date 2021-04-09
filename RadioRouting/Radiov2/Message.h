@@ -4,51 +4,72 @@
 #include <vector>
 #include <math.h>
 #include <bits/stdc++.h>
+#include <chrono>
 
 #define MSG_START_C '{'
 #define MSG_END_C '}'
 #define MSG_SEP_C ';'
 #define MSG_CMD_C '='
 
+#define SYN_CMD "SYN"
+#define SYNACK_CMD "SAK"
+
+#define EMPTY_INSTRUCTION ""
+
+struct Instruction
+{
+    std::string command;
+    std::string value;
+
+    Instruction()
+    {
+        this->command = EMPTY_INSTRUCTION;
+        this->value = EMPTY_INSTRUCTION;
+    }
+
+    template <class C, class V>
+    Instruction(C command, V value)
+    {
+        this->command = command;
+        this->value = value;
+    }
+
+    bool isEmpty()
+    {
+        return (this->command == EMPTY_INSTRUCTION) ? true : false;
+    }
+
+    void print()
+    {
+        std::cout << this->command << MSG_CMD_C << this->value << MSG_SEP_C;
+    }
+};
+
 class Message
 {
-    struct Instruction
-    {
-        std::string command;
-        std::string value;
-
-        Instruction()
-        {
-            this->command = nullptr;
-            this->value = nullptr;
-        }
-
-        template <class C, class V>
-        Instruction(C command, V value)
-        {
-            this->command = command;
-            this->value = value;
-        }
-
-        void print()
-        {
-            std::cout << this->command << MSG_CMD_C << this->value << MSG_SEP_C;
-        }
-    };
 
 private:
     static int _reverseNumber(int num);
     static std::vector<std::string> _chopString(std::string str, char sep);
+    static bool _isNumber(const std::string &s);
 
 public:
-    int len;
+    //Attributes:
+    int id;
     std::vector<Instruction> instructions;
     time_t time;
 
+    //Methods:
+    bool isEmpty();
     static Message strToMessage(std::string str);
-
     void print();
+    Instruction getInstruction(std::string command);
+    //Returns index of instruction in the msg or -1
+    int searchInstructionByIndex(std::string command);
+    //Same as search, but only returns true or false if match
+    bool hasInstruction(std::string command);
 
     Message();
     Message(std::vector<Instruction> instructions);
+    Message(std::string messageStr);
 };
