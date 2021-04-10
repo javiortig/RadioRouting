@@ -13,8 +13,11 @@
 
 #define SYN_CMD "SYN"
 #define SYNACK_CMD "SAK"
+#define FINISH_CMD "FIN"
 
 #define EMPTY_INSTRUCTION ""
+
+#define TWH_DEFAULT_INS_VALUE 0
 
 struct Instruction
 {
@@ -72,7 +75,7 @@ public:
 
     int length();
 
-    Message(std::vector<Instruction> instructions);
+    Message(std::string id, std::vector<Instruction> instructions);
     Message(std::string messageStr);
     Message(){};
 };

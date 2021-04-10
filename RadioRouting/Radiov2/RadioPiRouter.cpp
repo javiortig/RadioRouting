@@ -3,18 +3,53 @@
 RadioPiRouter::RadioPiRouter()
 {
     this->id = MAIN_ROUTER_ID;
+
+    //Setup default messages
+    this->SYNACK_MSG.instructions.push_back(Instruction(SYNACK_CMD, TWH_DEFAULT_INS_VALUE));
+    this->SYNACK_MSG.id = this->id;
+
+    this->FINISH_MSG.instructions.push_back(Instruction(FINISH_CMD, TWH_DEFAULT_INS_VALUE));
+    this->FINISH_MSG.id = this->id;
 }
 
 void RadioPiRouter::routine()
 {
-    _listenForNewStations();
+    listenForNewStations();
+
+    //Loop through all stations
+    // first is key, second is value
+    std::map<int, StationValue>::iterator it;
+    for (it = this->stations.begin(); it != stations.end(); it++)
+    {
+        //TODO: handle if setChannel fails
+        this->setChannel(it->first);
+
+        //establish connection
+        if (!this->TWH())
+            continue;
+
+        //listen to what station has to say
+        if (this->listenStation())
+        {
+            //Write to openHab
+        }
+        else
+        {
+            continue;
+        }
+
+        //Received and processed, send finish
+        this->sendMessage(this->FINISH_MSG);
+        sleep(SMALL_NAP_TIME);
+        this->sendMessage(this->FINISH_MSG);
+    }
 }
 
-bool RadioPiRouter::_listenForNewStations()
+bool RadioPiRouter::listenForNewStations()
 {
 }
 
-bool RadioPiRouter::_TWH()
+bool RadioPiRouter::TWH()
 {
     bool synFlag = false;
     auto start = std::chrono::system_clock::now();
@@ -25,7 +60,7 @@ bool RadioPiRouter::_TWH()
         if (!this->buffer.isEmpty() && this->buffer.hasInstruction(SYN_CMD))
         {
             //Check that id matches
-            if (this->stations[this->currentChannel].id == this->buffer.id)
+            if (this->stations[this->getChannel()].id == this->buffer.id)
             {
                 synFlag = true;
                 break;
@@ -44,7 +79,9 @@ bool RadioPiRouter::_TWH()
     } while (!synFlag);
 
     // send SYN ACK
-    // sendMessage(MSG_START_C + "15")
-}
+    this->sendMessage(this->SYNACK_MSG);
+    sleep(SMALL_NAP_TIME);
+    this->sendMessage(this->SYNACK_MSG);
 
-// {15;ROUTER;SAK}
+    return true;
+}

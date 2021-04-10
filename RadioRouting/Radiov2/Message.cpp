@@ -1,8 +1,9 @@
 #include "Message.h"
 
-Message::Message(std::vector<Instruction> instructions)
+Message::Message(std::string id, std::vector<Instruction> instructions)
 {
     this->instructions = instructions;
+    this->id = id;
 }
 
 Message::Message(std::string messageStr)
