@@ -5,28 +5,40 @@
 #include <unistd.h>
 //#include <pigpio>
 
-#define THW_WAIT_TIME 10
-#define SMALL_NAP_TIME 1
-
 /*
     TODO:
+    - Send messages and wait for OK instead of sending and 'sleeping'
+
     -A las stations añadir un vector de notificaciones que tiene que decirles
     el router como por ej: oye cambia la hora.
 
     -Añadir un cronometro a las estaciones y si no se han comunicado en ese tiempo
     borrarlas de la lista
+
+    - Por ahora que sea el ROUTER el que diga cuando acabar las comunicaciones
 */
+
+#define NEW_STATIONS_WAIT_TIME 4
+
+enum StationType
+{
+    push,
+    pull,
+    both
+};
+
 // The channel of the station is the key
 struct StationValue
 {
     std::string id;
     Message lastMessage;
+    StationType stationType;
 };
 
 class RadioPiRouter : public RadioDevice
 {
 private:
-    // WE WILL save this msg since its going to be sent very often
+    // save this msg since its going to be sent very often
     Message SYNACK_MSG;
     Message FINISH_MSG;
 
@@ -45,5 +57,11 @@ private:
 public:
     RadioPiRouter();
 
-    void routine();
+    /*  This is the main function and should be called each iter. of the program loop.
+        It requires 2 functions:
+        -handleStationInstructions
+        -getInstructionsForStation, which should return the instructions to send 
+    */
+    void routine(void (*handleStationInstructions)(std::string id, std::vector<Instruction> instructions),
+                 std::vector<Instruction> (*getInstructionsForStation)(std::string id));
 };

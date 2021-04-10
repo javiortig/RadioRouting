@@ -10,6 +10,9 @@
 
 #define DEFAULT_CH 0
 
+#define THW_WAIT_TIME 10
+#define SMALL_NAP_TIME 1
+
 class RadioDevice
 {
 private:
@@ -33,4 +36,8 @@ public:
     void sendMessage(std::string messageStr);
     virtual void sendMessage(Message message) = 0;
     virtual Message readMessage() = 0;
+
+    bool sendMessageWaitForOK(Message message);
+
+    void blockingWait(float seconds); // blocks execution without blocking asyncs
 };

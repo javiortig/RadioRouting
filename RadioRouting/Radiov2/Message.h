@@ -14,6 +14,8 @@
 #define SYN_CMD "SYN"
 #define SYNACK_CMD "SAK"
 #define FINISH_CMD "FIN"
+#define OK_CMD "OK"
+#define NEW_CMD "NEW"
 
 #define EMPTY_INSTRUCTION ""
 

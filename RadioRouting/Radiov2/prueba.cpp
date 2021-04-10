@@ -9,12 +9,24 @@
 
 // Example: {len;id;command...}
 
+void blockingWait(float seconds)
+{
+    auto start = std::chrono::system_clock::now();
+    auto end = std::chrono::system_clock::now();
+    std::chrono::duration<double> elapsed_seconds;
+    while (elapsed_seconds.count() <= seconds)
+    {
+        end = std::chrono::system_clock::now();
+        elapsed_seconds = end - start;
+    }
+}
+
 int main()
 {
-    int inLen = 10;
-    int v = static_cast<int>(log10(inLen)) + 1;
-    v = static_cast<int>(log10(inLen + v)) + 1;
+    float seconds = 1;
 
-    std::cout << v << std::endl;
+    std::cout << "Waiting for: " << seconds << std::endl;
+    blockingWait(seconds);
+    std::cout << "Finished" << std::endl;
     return 0;
 }

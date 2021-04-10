@@ -12,7 +12,8 @@ RadioPiRouter::RadioPiRouter()
     this->FINISH_MSG.id = this->id;
 }
 
-void RadioPiRouter::routine()
+void RadioPiRouter::routine(void (*handleStationInstructions)(std::string id, std::vector<Instruction> instructions),
+                            std::vector<Instruction> (*getInstructionsForStation)(std::string id))
 {
     listenForNewStations();
 
@@ -28,25 +29,71 @@ void RadioPiRouter::routine()
         if (!this->TWH())
             continue;
 
-        //listen to what station has to say
-        if (this->listenStation())
+        std::vector<Instruction> instructionsToSend;
+        switch (it->second.stationType)
         {
-            //Write to openHab
-        }
-        else
-        {
-            continue;
+        case StationType::push:
+            //listen to what station has to say
+            if (this->listenStation())
+            {
+                //Write to openHab
+                handleStationInstructions(it->second.id,
+                                          it->second.lastMessage.instructions);
+            }
+            break;
+        case StationType::pull:
+            //Send data to them(if we have to)
+            instructionsToSend = getInstructionsForStation(it->second.id);
+
+            // We have new instructions, so we send.
+            if (!instructionsToSend.empty())
+            {
+                this->sendMessage(Message(this->id, instructionsToSend));
+                this->blockingWait(SMALL_NAP_TIME);
+                this->sendMessage(Message(this->id, instructionsToSend));
+                this->blockingWait(SMALL_NAP_TIME);
+            }
+            break;
+        case StationType::both:
+            //TODO: push & pull
+
+            break;
+
+        default:
+            break;
         }
 
         //Received and processed, send finish
         this->sendMessage(this->FINISH_MSG);
-        sleep(SMALL_NAP_TIME);
+        this->blockingWait(SMALL_NAP_TIME);
         this->sendMessage(this->FINISH_MSG);
     }
 }
 
 bool RadioPiRouter::listenForNewStations()
 {
+    auto start = std::chrono::system_clock::now();
+    auto end = std::chrono::system_clock::now();
+    std::chrono::duration<double> elapsed_seconds;
+    while (elapsed_seconds.count() <= NEW_STATIONS_WAIT_TIME)
+    {
+        this->buffer = this->readMessage();
+        // check if received a NEW command
+        if (!this->buffer.isEmpty() && this->buffer.hasInstruction(NEW_CMD))
+        {
+            //Check that the id hasn't been taken. If taken, kick old and let the new in
+            std::map<int, StationValue>::iterator it;
+            for (it = this->stations.begin(); it != stations.end();)
+            {
+                if (it->second.id == buffer.id)
+                    stations.erase(it++);
+                else
+                    ++it;
+            }
+
+            //TODO: assign new channel and create station
+        }
+    }
 }
 
 bool RadioPiRouter::TWH()
@@ -75,12 +122,12 @@ bool RadioPiRouter::TWH()
             return false;
         }
 
-        sleep(SMALL_NAP_TIME);
+        this->blockingWait(SMALL_NAP_TIME);
     } while (!synFlag);
 
     // send SYN ACK
     this->sendMessage(this->SYNACK_MSG);
-    sleep(SMALL_NAP_TIME);
+    this->blockingWait(SMALL_NAP_TIME);
     this->sendMessage(this->SYNACK_MSG);
 
     return true;
