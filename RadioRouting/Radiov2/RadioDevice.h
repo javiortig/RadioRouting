@@ -13,6 +13,9 @@
 #define THW_WAIT_TIME 10
 #define SMALL_NAP_TIME 1
 
+#define MIN_CH 1
+#define MAX_CH 49
+
 class RadioDevice
 {
 private:

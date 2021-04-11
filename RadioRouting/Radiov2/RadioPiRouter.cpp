@@ -19,11 +19,10 @@ void RadioPiRouter::routine(void (*handleStationInstructions)(std::string id, st
 
     //Loop through all stations
     // first is key, second is value
-    std::map<int, StationValue>::iterator it;
-    for (it = this->stations.begin(); it != stations.end(); it++)
+    for (auto it = this->stations.begin(); it != stations.end(); it++)
     {
         //TODO: handle if setChannel fails
-        this->setChannel(it->first);
+        this->setChannel(it->second.channel);
 
         //establish connection
         if (!this->TWH())
@@ -37,13 +36,13 @@ void RadioPiRouter::routine(void (*handleStationInstructions)(std::string id, st
             if (this->listenStation())
             {
                 //Write to openHab
-                handleStationInstructions(it->second.id,
+                handleStationInstructions(it->first,
                                           it->second.lastMessage.instructions);
             }
             break;
         case StationType::pull:
             //Send data to them(if we have to)
-            instructionsToSend = getInstructionsForStation(it->second.id);
+            instructionsToSend = getInstructionsForStation(it->first);
 
             // We have new instructions, so we send.
             if (!instructionsToSend.empty())
@@ -82,10 +81,10 @@ bool RadioPiRouter::listenForNewStations()
         if (!this->buffer.isEmpty() && this->buffer.hasInstruction(NEW_CMD))
         {
             //Check that the id hasn't been taken. If taken, kick old and let the new in
-            std::map<int, StationValue>::iterator it;
+            std::map<std::string, StationValue>::iterator it;
             for (it = this->stations.begin(); it != stations.end();)
             {
-                if (it->second.id == buffer.id)
+                if (it->first == buffer.id)
                     stations.erase(it++);
                 else
                     ++it;
@@ -98,6 +97,7 @@ bool RadioPiRouter::listenForNewStations()
 
 bool RadioPiRouter::TWH()
 {
+
     bool synFlag = false;
     auto start = std::chrono::system_clock::now();
     do
@@ -107,7 +107,7 @@ bool RadioPiRouter::TWH()
         if (!this->buffer.isEmpty() && this->buffer.hasInstruction(SYN_CMD))
         {
             //Check that id matches
-            if (this->stations[this->getChannel()].id == this->buffer.id)
+            if (this->stations[this->buffer.id].channel == this->getChannel())
             {
                 synFlag = true;
                 break;

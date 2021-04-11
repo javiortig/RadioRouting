@@ -27,10 +27,10 @@ enum StationType
     both
 };
 
-// The channel of the station is the key
+// The id of the station is the key
 struct StationValue
 {
-    std::string id;
+    int channel;
     Message lastMessage;
     StationType stationType;
 };
@@ -43,7 +43,7 @@ private:
     Message FINISH_MSG;
 
     //The channel of the device is the key
-    std::map<int, StationValue> stations;
+    std::map<std::string, StationValue> stations;
 
     // True if found a new one
     bool listenForNewStations();
@@ -52,6 +52,7 @@ private:
     bool listenStation();
 
     //True if Three Way Handshake succeeded
+    // The Router should already be in the channel it wants to TWH
     bool TWH();
 
 public:

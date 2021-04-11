@@ -4,29 +4,142 @@
 #include <bits/stdc++.h>
 #include <unistd.h>
 #include <math.h>
+#include <future>
 
 #include "Message.h"
 
-// Example: {len;id;command...}
+using namespace std;
 
-void blockingWait(float seconds)
+enum StationType
 {
-    auto start = std::chrono::system_clock::now();
-    auto end = std::chrono::system_clock::now();
-    std::chrono::duration<double> elapsed_seconds;
-    while (elapsed_seconds.count() <= seconds)
+    undefined,
+    push,
+    pull,
+    both
+};
+
+class Stations
+{
+public:
+    struct StationKey
     {
-        end = std::chrono::system_clock::now();
-        elapsed_seconds = end - start;
+        int channel;
+        std::string id;
+
+        StationKey(int channel)
+        {
+            this->channel = channel;
+            this->id = "";
+        }
+
+        StationKey(std::string id, int channel = -1)
+        {
+            this->channel = channel;
+            this->id = id;
+        }
+    };
+
+    struct StationValue
+    {
+        Message lastMessage;
+        StationType stationType;
+
+        StationValue()
+        {
+            this->stationType = undefined;
+        }
+
+        StationValue(StationType type)
+        {
+            this->stationType = type;
+        }
+    };
+
+    struct orComparator
+    {
+        bool operator()(const StationKey &a, const StationKey &b) const
+        {
+            if (a.channel < b.channel)
+            {
+                return false;
+            }
+            else if (a.id < b.id)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+    };
+
+private:
+public:
+    std::map<StationKey, StationValue, orComparator> map;
+
+    //Checks if the map has a station of given id
+    bool hasStation(std::string id)
+    {
+        return map.find(StationKey(id)) != map.end();
     }
-}
+
+    // return =0 if succeed.
+    bool addStation(std::string id, StationType type = StationType::undefined)
+    {
+        // If Id already exists, erase it first and replace
+        if (this->hasStation(id))
+        {
+            this->map.erase(StationKey(id));
+        }
+
+        //Try 1 channel at a time until 1 channel is free and map accepts insertion
+        bool insertionSucceeded = false;
+        for (int ch = 1; !insertionSucceeded && ch < 50; ch++)
+            insertionSucceeded = this->map.insert(std::pair<StationKey, StationValue>(
+                                                      StationKey(id, ch), StationValue(type)))
+                                     .second;
+
+        if (insertionSucceeded)
+            return true;
+        else
+            return false; //The router is full
+    }
+
+    void print()
+    {
+        for (auto it = map.begin(); it != map.end(); it++)
+        {
+            std::cout << "<ch=" << it->first.channel
+                      << ", id=\'" << it->first.id
+                      << "\'>:<type=" << it->second.stationType << ">" << std::endl;
+        }
+    }
+
+    StationValue operator[](const int &value)
+    {
+        if (this->map.find(StationKey(value)) == this->map.end())
+            return StationValue();
+        else
+            return this->map[StationKey(value)];
+    }
+
+    StationValue operator[](const std::string &id)
+    {
+        return this->map[StationKey(id)];
+    }
+};
 
 int main()
 {
-    float seconds = 1;
+    Stations stations;
 
-    std::cout << "Waiting for: " << seconds << std::endl;
-    blockingWait(seconds);
-    std::cout << "Finished" << std::endl;
+    stations.addStation("/pozo", StationType::push);
+    stations.addStation("/alberca", StationType::pull);
+    stations.addStation("/molina", StationType::both);
+    stations.addStation("/casaFer", StationType::both);
+
+    stations.print();
+
     return 0;
 }
