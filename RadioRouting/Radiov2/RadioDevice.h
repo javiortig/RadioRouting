@@ -16,13 +16,13 @@
 #define MIN_CH 1
 #define MAX_CH 49
 
-enum StationType
-{
-    undefined,
-    push,
-    pull,
-    both
-};
+/*
+    TODO:
+    
+    -En general, la comunicacion no es muy segura, se puede perder info. Ej:
+    una estacion PUSH envia los datos, los da por enviados pero al router le llegan
+    con ruido
+*/
 
 class RadioDevice
 {
@@ -38,8 +38,8 @@ protected:
 
     virtual void startHC12() = 0;
     virtual void stopHC12() = 0;
-    virtual void writeHC12() = 0;
-    virtual void readHC12() = 0;
+    virtual void writeHC12(const std::string &str) = 0;
+    virtual std::string readHC12() = 0;
 
     virtual bool TWH() = 0; // establish connection
 
@@ -47,8 +47,4 @@ public:
     void sendMessage(std::string messageStr);
     virtual void sendMessage(Message message) = 0;
     virtual Message readMessage() = 0;
-
-    bool sendMessageWaitForOK(Message message);
-
-    static StationType strToStationType(const std::string &str);
 };

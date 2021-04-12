@@ -15,6 +15,8 @@
 #define SYNACK_CMD "SAK"
 #define FINISH_CMD "FIN"
 #define OK_CMD "OK"
+// The value of this instruction is the channel
+#define SUCCESSFULLY_ADDED_CMD "SUCC"
 
 //The new command requesting being added to the network.
 //The command values correspond to the StationType
@@ -22,10 +24,19 @@
 #define NEW_INS_VALUE_PUSH "PUSH"
 #define NEW_INS_VALUE_PULL "PULL"
 #define NEW_INS_VALUE_BOTH "BOTH"
+#define NEW_INS_VALUE_UNDEFINED "UNDF"
 
 #define EMPTY_INSTRUCTION ""
 
 #define TWH_DEFAULT_INS_VALUE 0
+
+enum StationType
+{
+    undefined,
+    push,
+    pull,
+    both
+};
 
 struct Instruction
 {
@@ -72,8 +83,13 @@ public:
 
     //Methods:
     bool isEmpty();
+
     static Message strToMessage(std::string str);
     static std::string messageToString(Message &message);
+
+    static std::string stationTypeToStr(const StationType &type);
+    static StationType strToStationType(const std::string &str);
+
     void print();
     Instruction getInstruction(std::string command);
     //Returns index of instruction in the msg or -1
@@ -83,7 +99,8 @@ public:
 
     int length();
 
-    Message(std::string id, std::vector<Instruction> instructions);
-    Message(std::string messageStr);
+    Message(const std::string &id, const std::vector<Instruction> &instructions);
+    Message(const std::string &id, const Instruction &singleInstruction);
+    Message(const std::string &messageStr);
     Message(){};
 };

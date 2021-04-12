@@ -9,5 +9,8 @@ private:
     std::vector<Instruction> newInstructions;
 
 public:
+    // Returns true if successfully contacted with the Router
     void routine();
+
+    void addInstructionToSend(const Instruction &instruction);
 };

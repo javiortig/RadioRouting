@@ -1,12 +1,18 @@
 #include "Message.h"
 
-Message::Message(std::string id, std::vector<Instruction> instructions)
+Message::Message(const std::string &id, const std::vector<Instruction> &instructions)
 {
     this->instructions = instructions;
     this->id = id;
 }
 
-Message::Message(std::string messageStr)
+Message::Message(const std::string &id, const Instruction &singleInstruction)
+{
+    this->instructions.push_back(singleInstruction);
+    this->id = id;
+}
+
+Message::Message(const std::string &messageStr)
 {
     *this = Message::strToMessage(messageStr);
 }
@@ -139,6 +145,37 @@ std::string Message::messageToString(Message &message)
     result += MSG_END_C;
 
     return result;
+}
+
+StationType Message::strToStationType(const std::string &str)
+{
+    if (str == NEW_INS_VALUE_PUSH)
+        return StationType::push;
+    else if (str == NEW_INS_VALUE_PULL)
+        return StationType::pull;
+    else if (str == NEW_INS_VALUE_BOTH)
+        return StationType::both;
+    else
+        return StationType::undefined;
+}
+
+std::string Message::stationTypeToStr(const StationType &type)
+{
+    switch (type)
+    {
+    case StationType::push:
+        return NEW_INS_VALUE_PUSH;
+        break;
+    case StationType::pull:
+        return NEW_INS_VALUE_PULL;
+        break;
+    case StationType::both:
+        return NEW_INS_VALUE_BOTH;
+        break;
+    default:
+        return NEW_INS_VALUE_UNDEFINED;
+        break;
+    }
 }
 
 void Message::print()

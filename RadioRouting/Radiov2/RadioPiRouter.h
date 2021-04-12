@@ -55,7 +55,8 @@ private:
     // The Router should already be in the channel it wants to TWH
     bool TWH();
 
-    bool addStation(const std::string &id, const StationType &type);
+    // Returns the channel where the station was added. <0 if not succeeded
+    int addStation(const std::string &id, const StationType &type);
 
 public:
     RadioPiRouter();

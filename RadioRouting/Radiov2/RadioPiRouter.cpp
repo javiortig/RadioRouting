@@ -104,8 +104,14 @@ bool RadioPiRouter::listenForNewStations()
         // check if received a NEW command
         if (!this->buffer.isEmpty() && this->buffer.hasInstruction(NEW_CMD))
         {
-            this->addStation(this->buffer.id,
-                             RadioDevice::strToStationType(this->buffer.getInstruction(NEW_CMD).value));
+            //Add station and send successfull message
+            int ch = this->addStation(this->buffer.id,
+                                      Message::strToStationType(this->buffer.getInstruction(NEW_CMD).value));
+
+            Message successfullAdd(this->id, Instruction(SUCCESSFULLY_ADDED_CMD, ch));
+            this->sendMessage(successfullAdd);
+            std::this_thread::sleep_for(std::chrono::seconds(SMALL_NAP_TIME));
+            this->sendMessage(successfullAdd);
 
             return true;
         }
@@ -117,7 +123,7 @@ bool RadioPiRouter::listenForNewStations()
     return false;
 }
 
-bool RadioPiRouter::addStation(const std::string &id, const StationType &type)
+int RadioPiRouter::addStation(const std::string &id, const StationType &type)
 {
     //Check that the id hasn't been taken. If taken, kick old and let the new in
     for (auto it = this->stations.begin(); it != stations.end();)
@@ -142,11 +148,11 @@ bool RadioPiRouter::addStation(const std::string &id, const StationType &type)
         {
             //channel is free. proceed to insertion
             this->stations[id] = StationValue(i, type);
-            return true;
+            return i;
         }
     }
 
-    return false;
+    return -1;
 }
 
 bool RadioPiRouter::TWH()
