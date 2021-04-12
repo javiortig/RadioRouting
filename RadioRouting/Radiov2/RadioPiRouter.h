@@ -18,14 +18,8 @@
     - Por ahora que sea el ROUTER el que diga cuando acabar las comunicaciones
 */
 
-#define NEW_STATIONS_WAIT_TIME 4
-
-enum StationType
-{
-    push,
-    pull,
-    both
-};
+#define NEW_STATIONS_TIMEOUT 4
+#define LISTEN_STATION_TIMEOUT 7
 
 // The id of the station is the key
 struct StationValue
@@ -33,6 +27,12 @@ struct StationValue
     int channel;
     Message lastMessage;
     StationType stationType;
+
+    StationValue(int channel, StationType type)
+    {
+        this->channel = channel;
+        this->stationType = type;
+    }
 };
 
 class RadioPiRouter : public RadioDevice
@@ -48,12 +48,14 @@ private:
     // True if found a new one
     bool listenForNewStations();
 
-    //True if received the message
+    //True if received the message. listens for the current channel
     bool listenStation();
 
     //True if Three Way Handshake succeeded
     // The Router should already be in the channel it wants to TWH
     bool TWH();
+
+    bool addStation(const std::string &id, const StationType &type);
 
 public:
     RadioPiRouter();
@@ -62,6 +64,7 @@ public:
         It requires 2 functions:
         -handleStationInstructions
         -getInstructionsForStation, which should return the instructions to send 
+         or empty vector if no new instructions
     */
     void routine(void (*handleStationInstructions)(std::string id, std::vector<Instruction> instructions),
                  std::vector<Instruction> (*getInstructionsForStation)(std::string id));

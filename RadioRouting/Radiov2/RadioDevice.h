@@ -16,6 +16,14 @@
 #define MIN_CH 1
 #define MAX_CH 49
 
+enum StationType
+{
+    undefined,
+    push,
+    pull,
+    both
+};
+
 class RadioDevice
 {
 private:
@@ -42,5 +50,5 @@ public:
 
     bool sendMessageWaitForOK(Message message);
 
-    void blockingWait(float seconds); // blocks execution without blocking asyncs
+    static StationType strToStationType(const std::string &str);
 };

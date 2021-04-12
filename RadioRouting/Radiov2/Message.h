@@ -15,7 +15,13 @@
 #define SYNACK_CMD "SAK"
 #define FINISH_CMD "FIN"
 #define OK_CMD "OK"
+
+//The new command requesting being added to the network.
+//The command values correspond to the StationType
 #define NEW_CMD "NEW"
+#define NEW_INS_VALUE_PUSH "PUSH"
+#define NEW_INS_VALUE_PULL "PULL"
+#define NEW_INS_VALUE_BOTH "BOTH"
 
 #define EMPTY_INSTRUCTION ""
 
