@@ -26,10 +26,9 @@
 
 class RadioDevice
 {
-private:
+protected:
     int currentChannel;
 
-protected:
     std::string id; //Has to be unique in the network
     Message buffer;
 
