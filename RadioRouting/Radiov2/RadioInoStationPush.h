@@ -5,7 +5,7 @@
 class RadioInoStationPush : public RadioInoStation
 {
 private:
-    // This vector will delete the instruction each time the instruction is sent
+    // This vector will delete the instruction each msgTime the instruction is sent
     std::vector<Instruction> newInstructions;
 
 public:

@@ -1,36 +1,36 @@
 #include "Message.h"
 
-Message::Message(const std::string &id, const std::vector<Instruction> &instructions)
+Message::Message(const String &id, const std::vector<Instruction> &instructions)
 {
     this->instructions = instructions;
     this->id = id;
 }
 
-Message::Message(const std::string &id, const Instruction &singleInstruction)
+Message::Message(const String &id, const Instruction &singleInstruction)
 {
     this->instructions.push_back(singleInstruction);
     this->id = id;
 }
 
-Message::Message(const std::string &messageStr)
+Message::Message(const String &messageStr)
 {
     *this = Message::strToMessage(messageStr);
 }
 
-std::vector<std::string> Message::_chopString(std::string str, char sep)
+std::vector<String> Message::_chopString(String str, char delim)
 {
-    //Chop message
-    std::vector<std::string> result;
-    std::stringstream ss(str);
-
-    while (ss.good())
+    std::vector<String> cont;
+    std::size_t current, previous = 0;
+    current = str.find(delim);
+    while (current != std::string::npos)
     {
-        std::string substr;
-        std::getline(ss, substr, sep);
-        result.push_back(substr);
+        cont.push_back(str.substr(previous, current - previous));
+        previous = current + 1;
+        current = str.find(delim, previous);
     }
+    cont.push_back(str.substr(previous, current - previous));
 
-    return result;
+    return cont;
 }
 
 bool Message::isEmpty()
@@ -38,7 +38,7 @@ bool Message::isEmpty()
     return this->instructions.empty();
 }
 
-Message Message::strToMessage(std::string str)
+Message Message::strToMessage(String str)
 {
     Message result;
     int sPos = str.find(MSG_START_C);
@@ -52,10 +52,10 @@ Message Message::strToMessage(std::string str)
         return Message();
     }
     str = str.substr(sPos + 1, ePos - sPos - 1);
-    std::vector<std::string> v = _chopString(str, MSG_SEP_C);
+    std::vector<String> v = _chopString(str, MSG_SEP_C);
 
 #ifdef DEBUG
-    std::cout << "Full msg string: " << str << " with len: " << str.length() << std::endl;
+    std::cout << "Full msg string: " << str << " with len: " << str.length() + 2 << std::endl;
     for (size_t i = 0; i < v.size(); i++)
         std::cout << v[i] << std::endl;
 
@@ -72,31 +72,24 @@ Message Message::strToMessage(std::string str)
 
     //extract number and check if it matches len
     int msgLen = stoi(v[0]);
+
     if (msgLen != str.length() + 2)
     {
 #ifdef DEBUG
-        std::cout << "Error: msg len doesnt match\n";
+        std::cout << "Error: msg len doesnt match with len:" << msgLen
+                  << " and str.length(): " << str.length() << std::endl;
 #endif
         return Message();
     }
+
     //extract id:
-    if (_isNumber(v[1]))
-    {
-        result.id = std::stoi(v[1]);
-    }
-    else
-    {
-#ifdef DEBUG
-        std::cout << "Error: no id provided in msg\n";
-#endif
-        return Message();
-    }
+    result.id = v[1];
 
     //extract instructions:
     std::vector<Instruction> instructions;
     for (int i = 2; i < v.size(); i++)
     {
-        std::vector<std::string> slice = _chopString(v[i], MSG_SEP_C);
+        std::vector<String> slice = _chopString(v[i], MSG_CMD_SEP_C);
         if (slice.size() != 2)
         {
 #ifdef DEBUG
@@ -118,21 +111,21 @@ Message Message::strToMessage(std::string str)
 #ifdef DEBUG
     for (int i = 0; i < instructions.size(); i++)
         instructions[i].print();
-    std::cout << "--end instructions--\n";
+    std::cout << "\n--end instructions--\n";
 #endif
 
     //set the result message and return it
     result.instructions = instructions;
-    result.time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    result.msgTime = time(nullptr);
     return result;
 }
 
-std::string Message::messageToString(Message &message)
+String Message::messageToString(Message &message)
 {
     if (message.isEmpty())
         return "";
 
-    std::string result = "";
+    String result = "";
     result = MSG_START_C + std::to_string(message.length()) + MSG_SEP_C +
              message.id;
 
@@ -147,7 +140,7 @@ std::string Message::messageToString(Message &message)
     return result;
 }
 
-StationType Message::strToStationType(const std::string &str)
+StationType Message::strToStationType(const String &str)
 {
     if (str == NEW_INS_VALUE_PUSH)
         return StationType::push;
@@ -159,7 +152,7 @@ StationType Message::strToStationType(const std::string &str)
         return StationType::undefined;
 }
 
-std::string Message::stationTypeToStr(const StationType &type)
+String Message::stationTypeToStr(const StationType &type)
 {
     switch (type)
     {
@@ -184,14 +177,15 @@ void Message::print()
         std::cout << std::endl;
     else
     {
+        std::cout << "{" << this->length() << MSG_SEP_C << this->id;
         for (int i = 0; i < this->instructions.size(); i++)
             this->instructions[i].print();
 
-        std::cout << std::endl;
+        std::cout << "}" << std::endl;
     }
 }
 
-Instruction Message::getInstruction(std::string command)
+Instruction Message::getInstruction(String command)
 {
     for (int i = 0; i < this->instructions.size(); i++)
         if (this->instructions[i].command == command)
@@ -200,7 +194,7 @@ Instruction Message::getInstruction(std::string command)
     return Instruction();
 }
 
-int Message::searchInstructionByIndex(std::string command)
+int Message::searchInstructionByIndex(String command)
 {
     for (int i = 0; i < this->instructions.size(); i++)
         if (instructions[i].command == command)
@@ -209,15 +203,22 @@ int Message::searchInstructionByIndex(std::string command)
     return -1;
 }
 
-bool Message::hasInstruction(std::string command)
+bool Message::hasInstruction(String command)
 {
     return (this->searchInstructionByIndex(command) >= 0) ? true : false;
 }
 
-bool Message::_isNumber(const std::string &s)
+bool Message::_isNumber(const String &s)
 {
-    return !s.empty() && std::find_if(s.begin(),
-                                      s.end(), [](unsigned char c) { return !std::isdigit(c); }) == s.end();
+    for (int i = 0; i < s.length(); i++)
+    {
+        if (s[i] < '0' || s[i] > '9')
+        {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 int Message::length()
