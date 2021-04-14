@@ -1,6 +1,6 @@
 #include "RadioDevice.h"
 
-void RadioDevice::sendMessage(std::string messageStr)
+void RadioDevice::sendMessage(String messageStr)
 {
     this->sendMessage(Message(messageStr));
 }

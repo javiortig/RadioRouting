@@ -171,19 +171,19 @@ String Message::stationTypeToStr(const StationType &type)
     }
 }
 
-void Message::print()
-{
-    if (this->isEmpty())
-        std::cout << std::endl;
-    else
-    {
-        std::cout << "{" << this->length() << MSG_SEP_C << this->id;
-        for (int i = 0; i < this->instructions.size(); i++)
-            this->instructions[i].print();
+// void Message::print()
+// {
+//     if (this->isEmpty())
+//         std::cout << std::endl;
+//     else
+//     {
+//         std::cout << "{" << this->length() << MSG_SEP_C << this->id;
+//         for (int i = 0; i < this->instructions.size(); i++)
+//             this->instructions[i].print();
 
-        std::cout << "}" << std::endl;
-    }
-}
+//         std::cout << "}" << std::endl;
+//     }
+// }
 
 Instruction Message::getInstruction(String command)
 {

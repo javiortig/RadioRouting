@@ -2,20 +2,20 @@
 
 void RadioInoStationPush::routine()
 {
-    if (!this->TWH())
-    {
-        return;
-    }
-
     //If we have instructions to send, send all to router
     if (!this->newInstructions.empty())
     {
+        if (!this->TWH())
+        {
+            return;
+        }
+
         Message data(this->id, this->newInstructions);
 
         this->sendMessage(data);
-        std::this_thread::sleep_for(std::chrono::seconds(SMALL_NAP_TIME));
+        delay(SMALL_NAP_TIME * 1000);
         this->sendMessage(data);
-        std::this_thread::sleep_for(std::chrono::seconds(SMALL_NAP_TIME));
+        delay(SMALL_NAP_TIME * 1000);
         this->sendMessage(data);
     }
 }

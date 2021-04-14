@@ -1,7 +1,7 @@
 #pragma once
 
 #include "RadioDevice.h"
-#include <SoftwareSerial.h>
+//#include <SoftwareSerial.h>
 
 #define HC12_RD 4
 #define HC12_TD 3
@@ -22,8 +22,8 @@ private:
 
     void startHC12() override;
     void stopHC12() override;
-    void writeHC12(const std::string &str) override;
-    std::string readHC12() override;
+    void writeHC12(const String &str) override;
+    String readHC12() override;
 
 protected:
     StationType type;
@@ -33,7 +33,7 @@ protected:
     bool TWH();
 
 public:
-    RadioInoStation(const std::string &id, const StationType &type,
+    RadioInoStation(const String &id, const StationType &type,
                     const int &rdPin = HC12_RD, const int &tdPin = HC12_TD,
                     const int &vccPin = HC12_VCC, const int &setPin = HC12_SET);
 

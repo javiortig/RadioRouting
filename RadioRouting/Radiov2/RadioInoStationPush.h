@@ -12,5 +12,6 @@ public:
     // Returns true if successfully contacted with the Router
     void routine();
 
+    //called by user before routine to send a message
     void addInstructionToSend(const Instruction &instruction);
 };

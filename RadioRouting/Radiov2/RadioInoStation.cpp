@@ -1,6 +1,6 @@
 #include "RadioInoStation.h"
 
-RadioInoStation::RadioInoStation(const std::string &id, const StationType &type,
+RadioInoStation::RadioInoStation(const String &id, const StationType &type,
                                  const int &rdPin = HC12_RD, const int &tdPin = HC12_TD,
                                  const int &vccPin = HC12_VCC, const int &setPin = HC12_SET)
 {
@@ -23,15 +23,14 @@ RadioInoStation::RadioInoStation(const std::string &id, const StationType &type,
 bool RadioInoStation::TWH()
 {
     //send SYN command
-    auto start = std::chrono::system_clock::now();
-    auto end = std::chrono::system_clock::now();
-    std::chrono::duration<double> elapsed_seconds;
+    ulong start = millis();
+    ulong end = millis();
 
-    while (elapsed_seconds.count() <= THW_WAIT_TIME * 4)
+    do
     {
 
         this->sendMessage(this->SYN_MSG);
-        std::this_thread::sleep_for(std::chrono::seconds(SMALL_NAP_TIME * 2));
+        delay(SMALL_NAP_TIME * 2);
 
         //check if synack received and id matches
         this->buffer = this->readMessage();
@@ -43,10 +42,7 @@ bool RadioInoStation::TWH()
                 return true;
             }
         }
-
-        end = std::chrono::system_clock::now();
-        elapsed_seconds = end - start;
-    }
+    } while (end - start <= THW_WAIT_TIME * 1000 * 4);
 
     return false;
 }
@@ -65,34 +61,33 @@ void RadioInoStation::requestAdd()
 
         digitalWrite(LED_BUILTIN, HIGH);
 
-        std::this_thread::sleep_for(std::chrono::seconds(SMALL_NAP_TIME * 2));
+        delay(SMALL_NAP_TIME * 2);
 
         digitalWrite(LED_BUILTIN, LOW);
 
         this->buffer = this->readMessage();
         if (this->buffer.hasInstruction(SUCCESSFULLY_ADDED_CMD))
         {
-            try
-            {
-                int ch = std::stoi(this->buffer.getInstruction(SUCCESSFULLY_ADDED_CMD).value);
 
-                //will be tru only if successfully change channel
-                flag = this->setChannel(ch);
-            }
-            catch (const std::invalid_argument &e)
+            int ch = this->buffer.getInstruction(SUCCESSFULLY_ADDED_CMD).value.toInt();
+
+            if (ch == 0)
             {
                 // Invalid conversion
                 flag = false;
                 continue;
             }
+
+            //will be tru only if successfully change channel
+            flag = this->setChannel(ch);
         }
     }
 }
 
 bool RadioInoStation::setChannel(int channel)
 {
-    std::string smsg = "AT+C0";
-    std::string temp = "";
+    String smsg = "AT+C0";
+    String temp = "";
 
     //clear hc12
     while (hc12.available())
@@ -106,7 +101,7 @@ bool RadioInoStation::setChannel(int channel)
     {
         smsg += '0';
     }
-    smsg += std::to_string(channel);
+    smsg += String(channel);
 
     digitalWrite(this->hc12SetPin, LOW);
     delay(60);
@@ -145,7 +140,7 @@ void RadioInoStation::stopHC12()
     digitalWrite(this->hc12VCCPin, LOW);
 }
 
-void RadioInoStation::writeHC12(const std::string &str)
+void RadioInoStation::writeHC12(const String &str)
 {
     while (hc12.available())
     {
@@ -154,9 +149,9 @@ void RadioInoStation::writeHC12(const std::string &str)
 
     hc12.print(str);
 }
-std::string RadioInoStation::readHC12()
+String RadioInoStation::readHC12()
 {
-    std::string b = "";
+    String b = "";
     while (hc12.available())
     {
         b += hc12.read();

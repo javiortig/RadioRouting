@@ -69,13 +69,13 @@ struct Instruction
         return (this->command == EMPTY_INSTRUCTION) ? true : false;
     }
 
-    void print(bool sep = true)
-    {
-        if (sep)
-            std::cout << MSG_SEP_C;
+    // void print(bool sep = true)
+    // {
+    //     if (sep)
+    //         std::cout << MSG_SEP_C;
 
-        std::cout << this->command << MSG_CMD_SEP_C << this->value;
-    }
+    //     std::cout << this->command << MSG_CMD_SEP_C << this->value;
+    // }
 };
 
 class Message
@@ -101,7 +101,7 @@ public:
     static String stationTypeToStr(const StationType &type);
     static StationType strToStationType(const String &str);
 
-    void print();
+    //void print();
     Instruction getInstruction(String command);
     //Returns index of instruction in the msg or -1
     int searchInstructionByIndex(String command);

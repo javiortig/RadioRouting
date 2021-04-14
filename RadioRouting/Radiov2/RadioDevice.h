@@ -29,7 +29,7 @@ class RadioDevice
 protected:
     int currentChannel;
 
-    std::string id; //Has to be unique in the network
+    String id; //Has to be unique in the network
     Message buffer;
 
     int getChannel();
@@ -37,13 +37,13 @@ protected:
 
     virtual void startHC12() = 0;
     virtual void stopHC12() = 0;
-    virtual void writeHC12(const std::string &str) = 0;
-    virtual std::string readHC12() = 0;
+    virtual void writeHC12(const String &str) = 0;
+    virtual String readHC12() = 0;
 
     virtual bool TWH() = 0; // establish connection
 
 public:
-    void sendMessage(std::string messageStr);
+    void sendMessage(String messageStr);
     virtual void sendMessage(Message message) = 0;
     virtual Message readMessage() = 0;
 };
