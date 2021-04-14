@@ -20,16 +20,17 @@ Message::Message(const String &messageStr)
 std::vector<String> Message::_chopString(String str, char delim)
 {
     std::vector<String> cont;
-    std::size_t current, previous = 0;
-    current = str.find(delim);
-    while (current != std::string::npos)
+    int startInd = 0, nextDelInd = 0;
+    nextDelInd = str.indexOf(delim, startInd);
+    while (nextDelInd > -1)
     {
-        cont.push_back(str.substr(previous, current - previous));
-        previous = current + 1;
-        current = str.find(delim, previous);
+      cont.push_back(str.substring(startInd, nextDelInd));
+      startInd = nextDelInd + 1;
+      nextDelInd = str.indexOf(delim, startInd);
+        
     }
-    cont.push_back(str.substr(previous, current - previous));
-
+    cont.push_back(str.substring(startInd));
+    
     return cont;
 }
 
@@ -41,44 +42,26 @@ bool Message::isEmpty()
 Message Message::strToMessage(String str)
 {
     Message result;
-    int sPos = str.find(MSG_START_C);
-    int ePos = str.find(MSG_END_C);
+    int sPos = str.indexOf(MSG_START_C);
+    int ePos = str.indexOf(MSG_END_C);
     // Invalid message. return empty
     if (sPos < 0 || ePos < 0 || str.length() < 3 || sPos + 1 >= str.length() || !isdigit(str[sPos + 1]))
     {
-#ifdef DEBUG
-        std::cout << "Error: str input\n";
-#endif
         return Message();
     }
-    str = str.substr(sPos + 1, ePos - sPos - 1);
+    str = str.substring(1, str.length() - 1);
     std::vector<String> v = _chopString(str, MSG_SEP_C);
-
-#ifdef DEBUG
-    std::cout << "Full msg string: " << str << " with len: " << str.length() + 2 << std::endl;
-    for (size_t i = 0; i < v.size(); i++)
-        std::cout << v[i] << std::endl;
-
-    std::cout << "--end chop--\n";
-#endif
 
     if (v.size() <= 2)
     {
-#ifdef DEBUG
-        std::cout << "Error: msg empty\n";
-#endif
         return Message(); // Message is Empty
     }
 
     //extract number and check if it matches len
-    int msgLen = stoi(v[0]);
+    int msgLen = v[0].toInt();
 
     if (msgLen != str.length() + 2)
     {
-#ifdef DEBUG
-        std::cout << "Error: msg len doesnt match with len:" << msgLen
-                  << " and str.length(): " << str.length() << std::endl;
-#endif
         return Message();
     }
 
@@ -92,9 +75,6 @@ Message Message::strToMessage(String str)
         std::vector<String> slice = _chopString(v[i], MSG_CMD_SEP_C);
         if (slice.size() != 2)
         {
-#ifdef DEBUG
-            std::cout << "Error: invalid command in msg\n";
-#endif
             return Message();
         }
 
@@ -102,17 +82,8 @@ Message Message::strToMessage(String str)
     }
     if (instructions.size() < 1)
     {
-#ifdef DEBUG
-        std::cout << "Error: empty message\n";
-#endif
         return Message();
     }
-
-#ifdef DEBUG
-    for (int i = 0; i < instructions.size(); i++)
-        instructions[i].print();
-    std::cout << "\n--end instructions--\n";
-#endif
 
     //set the result message and return it
     result.instructions = instructions;
@@ -126,7 +97,7 @@ String Message::messageToString(Message &message)
         return "";
 
     String result = "";
-    result = MSG_START_C + std::to_string(message.length()) + MSG_SEP_C +
+    result = MSG_START_C + String(message.length()) + MSG_SEP_C +
              message.id;
 
     for (int i = 0; i < message.instructions.size(); i++)
@@ -174,14 +145,14 @@ String Message::stationTypeToStr(const StationType &type)
 void Message::print()
 {
     if (this->isEmpty())
-        std::cout << std::endl;
+        Serial.print("Empty\n");
     else
     {
-        std::cout << "{" << this->length() << MSG_SEP_C << this->id;
+        Serial.print("{" + String(this->length()) + MSG_SEP_C + this->id);
         for (int i = 0; i < this->instructions.size(); i++)
             this->instructions[i].print();
 
-        std::cout << "}" << std::endl;
+        Serial.print("}\n");
     }
 }
 

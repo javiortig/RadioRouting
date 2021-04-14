@@ -1,14 +1,18 @@
 #pragma once
 
+#include <Arduino.h>
+#include <time.h>
+
 #ifndef Arduino_h
 #include <iostream>
 #include <vector>
 #include <math.h>
-#include <time.h>
 
 #define String std::string
 
 #else
+#include <ArduinoSTL.h>
+
 #endif
 
 #define MSG_START_C '{'
@@ -70,13 +74,13 @@ struct Instruction
         return (this->command == EMPTY_INSTRUCTION) ? true : false;
     }
 
-    // void print(bool sep = true)
-    // {
-    //     if (sep)
-    //         std::cout << MSG_SEP_C;
+    void print(bool sep = true)
+    {
+        if (sep)
+            Serial.print(MSG_SEP_C);
 
-    //     std::cout << this->command << MSG_CMD_SEP_C << this->value;
-    // }
+        Serial.print(this->command + MSG_CMD_SEP_C + this->value);
+    }
 };
 
 class Message
