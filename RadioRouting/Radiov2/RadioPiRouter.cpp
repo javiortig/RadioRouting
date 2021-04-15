@@ -1,6 +1,7 @@
 #include "RadioPiRouter.h"
 
-RadioPiRouter::RadioPiRouter()
+RadioPiRouter::RadioPiRouter(const int &rdPin, const int &tdPin,
+                             const int &vccPin, const int &setPin) : RadioDevice(rdPin, tdPin, vccPin, setPin)
 {
     this->id = MAIN_ROUTER_ID;
 
@@ -39,7 +40,7 @@ bool RadioPiRouter::listenStation()
 void RadioPiRouter::routine(void (*handleStationInstructions)(std::string id, std::vector<Instruction> instructions),
                             std::vector<Instruction> (*getInstructionsForStation)(std::string id))
 {
-    listenForNewStations();
+    this->listenForNewStations();
 
     //Loop through all stations
     // first is key, second is value

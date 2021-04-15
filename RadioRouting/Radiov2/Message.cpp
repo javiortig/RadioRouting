@@ -1,25 +1,25 @@
 #include "Message.h"
 
-Message::Message(const String &id, const std::vector<Instruction> &instructions)
+Message::Message(const std::string &id, const std::vector<Instruction> &instructions)
 {
     this->instructions = instructions;
     this->id = id;
 }
 
-Message::Message(const String &id, const Instruction &singleInstruction)
+Message::Message(const std::string &id, const Instruction &singleInstruction)
 {
     this->instructions.push_back(singleInstruction);
     this->id = id;
 }
 
-Message::Message(const String &messageStr)
+Message::Message(const std::string &messageStr)
 {
     *this = Message::strToMessage(messageStr);
 }
 
-std::vector<String> Message::_chopString(String str, char delim)
+std::vector<std::string> Message::_chopString(std::string str, char delim)
 {
-    std::vector<String> cont;
+    std::vector<std::string> cont;
     std::size_t current, previous = 0;
     current = str.find(delim);
     while (current != std::string::npos)
@@ -38,7 +38,7 @@ bool Message::isEmpty()
     return this->instructions.empty();
 }
 
-Message Message::strToMessage(String str)
+Message Message::strToMessage(std::string str)
 {
     Message result;
     int sPos = str.find(MSG_START_C);
@@ -52,7 +52,7 @@ Message Message::strToMessage(String str)
         return Message();
     }
     str = str.substr(sPos + 1, ePos - sPos - 1);
-    std::vector<String> v = _chopString(str, MSG_SEP_C);
+    std::vector<std::string> v = _chopString(str, MSG_SEP_C);
 
 #ifdef DEBUG
     std::cout << "Full msg string: " << str << " with len: " << str.length() + 2 << std::endl;
@@ -89,7 +89,7 @@ Message Message::strToMessage(String str)
     std::vector<Instruction> instructions;
     for (int i = 2; i < v.size(); i++)
     {
-        std::vector<String> slice = _chopString(v[i], MSG_CMD_SEP_C);
+        std::vector<std::string> slice = _chopString(v[i], MSG_CMD_SEP_C);
         if (slice.size() != 2)
         {
 #ifdef DEBUG
@@ -120,12 +120,12 @@ Message Message::strToMessage(String str)
     return result;
 }
 
-String Message::messageToString(Message &message)
+std::string Message::messageToString(Message &message)
 {
     if (message.isEmpty())
         return "";
 
-    String result = "";
+    std::string result = "";
     result = MSG_START_C + std::to_string(message.length()) + MSG_SEP_C +
              message.id;
 
@@ -140,7 +140,7 @@ String Message::messageToString(Message &message)
     return result;
 }
 
-StationType Message::strToStationType(const String &str)
+StationType Message::strToStationType(const std::string &str)
 {
     if (str == NEW_INS_VALUE_PUSH)
         return StationType::push;
@@ -152,7 +152,7 @@ StationType Message::strToStationType(const String &str)
         return StationType::undefined;
 }
 
-String Message::stationTypeToStr(const StationType &type)
+std::string Message::stationTypeToStr(const StationType &type)
 {
     switch (type)
     {
@@ -185,7 +185,7 @@ void Message::print()
     }
 }
 
-Instruction Message::getInstruction(String command)
+Instruction Message::getInstruction(std::string command)
 {
     for (int i = 0; i < this->instructions.size(); i++)
         if (this->instructions[i].command == command)
@@ -194,7 +194,7 @@ Instruction Message::getInstruction(String command)
     return Instruction();
 }
 
-int Message::searchInstructionByIndex(String command)
+int Message::searchInstructionByIndex(std::string command)
 {
     for (int i = 0; i < this->instructions.size(); i++)
         if (instructions[i].command == command)
@@ -203,12 +203,12 @@ int Message::searchInstructionByIndex(String command)
     return -1;
 }
 
-bool Message::hasInstruction(String command)
+bool Message::hasInstruction(std::string command)
 {
     return (this->searchInstructionByIndex(command) >= 0) ? true : false;
 }
 
-bool Message::_isNumber(const String &s)
+bool Message::_isNumber(const std::string &s)
 {
     for (int i = 0; i < s.length(); i++)
     {

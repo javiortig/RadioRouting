@@ -1,6 +1,13 @@
 #pragma once
 
+/*
+    Library for Rpi and other linux-based systems
+*/
+
 #include "Message.h"
+#include <thread>
+//#include <pigpio.h>
+//#include <wiringSerial.h>
 
 #define MAIN_ROUTER_ID "ROUTER"
 
@@ -11,6 +18,13 @@
 
 #define MIN_CH 1
 #define MAX_CH 49
+
+#define HC12_RD 15
+#define HC12_TD 14
+#define HC12_VCC 18
+#define HC12_SET 23
+
+#define SERIAL_PORT "/dev/ttyS0"
 
 /*
     TODO:
@@ -25,21 +39,33 @@ class RadioDevice
 protected:
     int currentChannel;
 
-    String id; //Has to be unique in the network
+    std::string id; //Has to be unique in the network
     Message buffer;
 
-    int getChannel();
-    virtual bool setChannel(int channel) = 0;
+    int hc12RDPin;
+    int hc12TDPin;
+    int hc12VCCPin;
+    int hc12SetPin;
+    int hc12FileDescriptor;
 
-    virtual void startHC12() = 0;
-    virtual void stopHC12() = 0;
-    virtual void writeHC12(const String &str) = 0;
-    virtual String readHC12() = 0;
+    int getChannel();
+    bool setChannel(int channel);
+
+    // GPIO should be initialized before calling this function. Remember to call
+    // gpioTerminate at the end.
+    void startHC12();
+
+    void stopHC12();
+    void writeHC12(const std::string &str);
+    std::string readHC12();
 
     virtual bool TWH() = 0; // establish connection
 
 public:
-    void sendMessage(String messageStr);
-    virtual void sendMessage(Message message) = 0;
-    virtual Message readMessage() = 0;
+    void sendMessage(std::string messageStr);
+    void sendMessage(Message message);
+    Message readMessage();
+
+    RadioDevice(const int &rdPin = HC12_RD, const int &tdPin = HC12_TD,
+                const int &vccPin = HC12_VCC, const int &setPin = HC12_SET);
 };

@@ -1,15 +1,10 @@
 #pragma once
 
-#ifndef Arduino_h
 #include <iostream>
 #include <vector>
 #include <math.h>
 #include <time.h>
-
-#define String std::string
-
-#else
-#endif
+#include <chrono>
 
 #define MSG_START_C '{'
 #define MSG_END_C '}'
@@ -49,8 +44,8 @@ enum StationType
 
 struct Instruction
 {
-    String command;
-    String value;
+    std::string command;
+    std::string value;
 
     Instruction()
     {
@@ -70,13 +65,13 @@ struct Instruction
         return (this->command == EMPTY_INSTRUCTION) ? true : false;
     }
 
-    // void print(bool sep = true)
-    // {
-    //     if (sep)
-    //         std::cout << MSG_SEP_C;
+    void print(bool sep = true)
+    {
+        if (sep)
+            std::cout << MSG_SEP_C;
 
-    //     std::cout << this->command << MSG_CMD_SEP_C << this->value;
-    // }
+        std::cout << this->command << MSG_CMD_SEP_C << this->value;
+    }
 };
 
 class Message
@@ -84,35 +79,35 @@ class Message
 
 private:
     static int _reverseNumber(int num);
-    static std::vector<String> _chopString(String str, char sep);
-    static bool _isNumber(const String &s);
+    static std::vector<std::string> _chopString(std::string str, char sep);
+    static bool _isNumber(const std::string &s);
 
 public:
     //Attributes:
-    String id;
+    std::string id;
     std::vector<Instruction> instructions;
     time_t msgTime;
 
     //Methods:
     bool isEmpty();
 
-    static Message strToMessage(String str);
-    static String messageToString(Message &message);
+    static Message strToMessage(std::string str);
+    static std::string messageToString(Message &message);
 
-    static String stationTypeToStr(const StationType &type);
-    static StationType strToStationType(const String &str);
+    static std::string stationTypeToStr(const StationType &type);
+    static StationType strToStationType(const std::string &str);
 
     void print();
-    Instruction getInstruction(String command);
+    Instruction getInstruction(std::string command);
     //Returns index of instruction in the msg or -1
-    int searchInstructionByIndex(String command);
+    int searchInstructionByIndex(std::string command);
     //Same as search, but only returns true or false if match
-    bool hasInstruction(String command);
+    bool hasInstruction(std::string command);
 
     int length();
 
-    Message(const String &id, const std::vector<Instruction> &instructions);
-    Message(const String &id, const Instruction &singleInstruction);
-    Message(const String &messageStr);
+    Message(const std::string &id, const std::vector<Instruction> &instructions);
+    Message(const std::string &id, const Instruction &singleInstruction);
+    Message(const std::string &messageStr);
     Message(){};
 };

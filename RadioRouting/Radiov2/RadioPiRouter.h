@@ -3,7 +3,8 @@
 #include "RadioDevice.h"
 
 #include <unistd.h>
-//#include <pigpio>
+#include <map>
+#include <set>
 
 /*
     TODO:
@@ -59,7 +60,8 @@ private:
     int addStation(const std::string &id, const StationType &type);
 
 public:
-    RadioPiRouter();
+    RadioPiRouter(const int &rdPin = HC12_RD, const int &tdPin = HC12_TD,
+                  const int &vccPin = HC12_VCC, const int &setPin = HC12_SET);
 
     /*  This is the main function and should be called each iter. of the program loop.
         It requires 2 functions:
