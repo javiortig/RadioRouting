@@ -92,10 +92,18 @@ void RadioPiRouter::routine(void (*handleStationInstructions)(std::string id, st
         std::this_thread::sleep_for(std::chrono::seconds(SMALL_NAP_TIME));
         this->sendMessage(this->FINISH_MSG);
     }
+
+    std::cout << "Ending routine...\n";
 }
 
 bool RadioPiRouter::listenForNewStations()
 {
+    if (!this->setChannel(DEFAULT_CH))
+    {
+        std::cout << "Error: Couldnt change channel\n";
+        return false;
+    }
+
     auto start = std::chrono::system_clock::now();
     auto end = std::chrono::system_clock::now();
     std::chrono::duration<double> elapsed_seconds;

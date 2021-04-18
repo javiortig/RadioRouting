@@ -4,13 +4,21 @@
 
 #define MAIN_ROUTER_ID "ROUTER"
 
-#define DEFAULT_CH 0
+#define DEFAULT_CH 1
 
 #define THW_WAIT_TIME 10
 #define SMALL_NAP_TIME 1
+#define HC12_DELAY_M 1000
 
-#define MIN_CH 1
+#define MIN_CH 2
 #define MAX_CH 49
+
+#define HC12_RD 4
+#define HC12_TD 3
+#define HC12_VCC 2
+#define HC12_SET 5
+
+
 
 /*
     TODO:
@@ -23,23 +31,36 @@
 class RadioDevice
 {
 protected:
+    SoftwareSerial *hc12;
+    
+    int hc12RDPin;
+    int hc12TDPin;
+    int hc12VCCPin;
+    int hc12SetPin;
+
+    
     int currentChannel;
 
     String id; //Has to be unique in the network
     Message buffer;
 
     int getChannel();
-    virtual bool setChannel(int channel) = 0;
+    bool setChannel(int channel);
 
-    virtual void startHC12() = 0;
-    virtual void stopHC12() = 0;
-    virtual void writeHC12(const String &str) = 0;
-    virtual String readHC12() = 0;
+    void startHC12() ;
+    void stopHC12() ;
+    void writeHC12(const String &str) ;
+    String readHC12();
 
     virtual bool TWH() = 0; // establish connection
 
 public:
     void sendMessage(String messageStr);
-    virtual void sendMessage(Message message) = 0;
-    virtual Message readMessage() = 0;
+    void sendMessage(Message message);
+    Message readMessage();
+
+    //RadioDevice(const int &rdPin, const int &tdPin,
+      //                           const int &vccPin, const int &setPin);
+
+    //~RadioDevice();
 };

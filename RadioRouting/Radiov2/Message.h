@@ -5,6 +5,9 @@
 #include <math.h>
 #include <time.h>
 #include <chrono>
+#include <thread>
+#include <pigpio.h>
+#include <wiringSerial.h>
 
 #define MSG_START_C '{'
 #define MSG_END_C '}'

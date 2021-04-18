@@ -1,5 +1,13 @@
 #include "Message.h"
 
+void pmem(){
+  Serial.println(F("Starting state of the memory: "));
+    
+    MEMORY_PRINT_FREERAM
+
+    Serial.println();
+}
+
 Message::Message(const String &id, const std::vector<Instruction> &instructions)
 {
     this->instructions = instructions;
@@ -17,7 +25,7 @@ Message::Message(const String &messageStr)
     *this = Message::strToMessage(messageStr);
 }
 
-std::vector<String> Message::_chopString(String str, char delim)
+std::vector<String> Message::_chopString(const String &str, const char &delim)
 {
     std::vector<String> cont;
     int startInd = 0, nextDelInd = 0;
@@ -29,7 +37,10 @@ std::vector<String> Message::_chopString(String str, char delim)
       nextDelInd = str.indexOf(delim, startInd);
         
     }
+    
     cont.push_back(str.substring(startInd));
+
+    pmem();
     
     return cont;
 }
@@ -41,7 +52,11 @@ bool Message::isEmpty()
 
 Message Message::strToMessage(String str)
 {
+    pmem();
     Message result;
+
+    str.trim();
+    
     int sPos = str.indexOf(MSG_START_C);
     int ePos = str.indexOf(MSG_END_C);
     // Invalid message. return empty
@@ -68,18 +83,33 @@ Message Message::strToMessage(String str)
     //extract id:
     result.id = v[1];
 
+    Serial.println("LLego1");
+
     //extract instructions:
     std::vector<Instruction> instructions;
+    std::vector<String> slice;
+
+    Serial.println("Sizes:");
+    Serial.println(sizeof(str));
+    Serial.println(sizeof(result));
+    Serial.println(sizeof(instructions));
+    Serial.println(sizeof(slice));
+    Serial.println(sizeof(v));
+    
     for (int i = 2; i < v.size(); i++)
     {
-        std::vector<String> slice = _chopString(v[i], MSG_CMD_SEP_C);
+        Serial.println("Iter " + String(i));
+        pmem();
+        slice = _chopString(v[i], MSG_CMD_SEP_C);
         if (slice.size() != 2)
         {
             return Message();
         }
 
         instructions.push_back(Instruction(slice[0], slice[1]));
+        slice.clear();
     }
+    
     if (instructions.size() < 1)
     {
         return Message();
@@ -87,7 +117,9 @@ Message Message::strToMessage(String str)
 
     //set the result message and return it
     result.instructions = instructions;
-    result.msgTime = time(nullptr);
+
+    Serial.println("salgo strtomsg");
+    result.print();
     return result;
 }
 
@@ -102,7 +134,7 @@ String Message::messageToString(Message &message)
 
     for (int i = 0; i < message.instructions.size(); i++)
     {
-        result += MSG_CMD_SEP_C + message.instructions[i].command +
+        result += MSG_SEP_C + message.instructions[i].command +
                   MSG_CMD_SEP_C + message.instructions[i].value;
     }
 

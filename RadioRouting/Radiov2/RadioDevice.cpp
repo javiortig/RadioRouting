@@ -5,13 +5,15 @@ void RadioDevice::sendMessage(std::string messageStr)
     this->sendMessage(Message(messageStr));
 }
 
-RadioDevice::RadioDevice(const int &rdPin = HC12_RD, const int &tdPin = HC12_TD,
-                         const int &vccPin = HC12_VCC, const int &setPin = HC12_SET)
+RadioDevice::RadioDevice(const int &rdPin, const int &tdPin,
+                         const int &vccPin, const int &setPin)
 {
     this->hc12RDPin = rdPin;
     this->hc12TDPin = tdPin;
     this->hc12VCCPin = vccPin;
     this->hc12SetPin = setPin;
+
+    this->startHC12();
 }
 
 bool RadioDevice::setChannel(int channel)
@@ -22,7 +24,7 @@ bool RadioDevice::setChannel(int channel)
     //clear hc12
     serialFlush(this->hc12FileDescriptor);
 
-    if (channel < MIN_CH || channel > MAX_CH)
+    if ((channel < MIN_CH || channel > MAX_CH) && channel != DEFAULT_CH)
         return false;
     if (channel < 10)
     {
@@ -35,6 +37,8 @@ bool RadioDevice::setChannel(int channel)
     this->writeHC12(smsg);
     std::this_thread::sleep_for(std::chrono::milliseconds(40));
     temp = this->readHC12();
+
+    std::cout << "In setChannel temp: " << temp << std::endl;
 
     if (temp != smsg)
     {
@@ -73,7 +77,7 @@ void RadioDevice::writeHC12(const std::string &str)
 {
     serialFlush(this->hc12FileDescriptor);
 
-    serialPrintf(this->hc12FileDescriptor, str);
+    serialPrintf(this->hc12FileDescriptor, str.c_str());
 }
 std::string RadioDevice::readHC12()
 {
@@ -94,4 +98,9 @@ Message RadioDevice::readMessage()
 void RadioDevice::sendMessage(Message message)
 {
     this->writeHC12(Message::messageToString(message));
+}
+
+int RadioDevice::getChannel()
+{
+    return this->currentChannel;
 }

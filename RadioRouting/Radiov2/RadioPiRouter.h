@@ -34,6 +34,12 @@ struct StationValue
         this->channel = channel;
         this->stationType = type;
     }
+
+    StationValue()
+    {
+	this->channel = -1;
+	this->stationType = StationType::undefined;
+    }
 };
 
 class RadioPiRouter : public RadioDevice
@@ -54,7 +60,7 @@ private:
 
     //True if Three Way Handshake succeeded
     // The Router should already be in the channel it wants to TWH
-    bool TWH();
+    bool TWH() override;
 
     // Returns the channel where the station was added. <0 if not succeeded
     int addStation(const std::string &id, const StationType &type);

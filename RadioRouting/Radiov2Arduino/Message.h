@@ -2,18 +2,12 @@
 
 #include <Arduino.h>
 #include <time.h>
+#include <SoftwareSerial.h>
 
-#ifndef Arduino_h
-#include <iostream>
-#include <vector>
-#include <math.h>
+#include <MemoryUsage.h>
 
-#define String std::string
-
-#else
 #include <ArduinoSTL.h>
 
-#endif
 
 #define MSG_START_C '{'
 #define MSG_END_C '}'
@@ -88,7 +82,7 @@ class Message
 
 private:
     static int _reverseNumber(int num);
-    static std::vector<String> _chopString(String str, char sep);
+    static std::vector<String> _chopString(const String &str, const char &sep);
     static bool _isNumber(const String &s);
 
 public:

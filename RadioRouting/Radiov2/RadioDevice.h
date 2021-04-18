@@ -6,23 +6,23 @@
 
 #include "Message.h"
 #include <thread>
-//#include <pigpio.h>
-//#include <wiringSerial.h>
+#include <pigpio.h>
+#include <wiringSerial.h>
 
 #define MAIN_ROUTER_ID "ROUTER"
 
-#define DEFAULT_CH 0
+#define DEFAULT_CH 1
 
 #define THW_WAIT_TIME 10
 #define SMALL_NAP_TIME 1
 
-#define MIN_CH 1
+#define MIN_CH 2
 #define MAX_CH 49
 
 #define HC12_RD 15
 #define HC12_TD 14
-#define HC12_VCC 18
-#define HC12_SET 23
+#define HC12_VCC 17
+#define HC12_SET 27
 
 #define SERIAL_PORT "/dev/ttyS0"
 
