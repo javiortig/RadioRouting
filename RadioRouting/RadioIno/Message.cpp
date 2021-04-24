@@ -1,8 +1,18 @@
 #include "Message.h"
 
-void Message::indexOf(unsigned char *res, const char str[], const char &value, unsigned char from)
+Message::Message()
 {
-    for (*res = from + 2; str[*res] != '\0'; ++(*res))
+    this->id[0] = '\0';
+}
+
+Message::Message(const char *str)
+{
+    this->strToMessage(str);
+}
+
+void Message::indexOf(unsigned char *res, const char str[], const char &value)
+{
+    for (; str[*res] != '\0'; ++(*res))
     {
         if (str[*res] == value)
         {
@@ -16,7 +26,8 @@ void Message::indexOf(unsigned char *res, const char str[], const char &value, u
 bool Message::strToMessage(const char str[])
 {
 
-    unsigned char sPos, ePos, sAux, eAux;
+    unsigned char sPos = 0, ePos = 0, sAux = 0, eAux = 0, iAux = 0;
+    unsigned char x, y;
     indexOf(&sPos, str, MSG_START_C);
     indexOf(&ePos, str, MSG_END_C);
 
@@ -27,60 +38,130 @@ bool Message::strToMessage(const char str[])
         return false;
     }
     //Check the messageLen
+    sAux = sPos;
+    eAux = sAux;
+    ++eAux;
+    indexOf(&eAux, str, MSG_SEP_C);
 
-    if (v.size() <= 2)
+    Serial.println(sAux);
+
+    for (y = 0, x = 0, iAux = eAux - 1; iAux > sAux; ++y, --iAux)
     {
-        return oldMessage(); // oldMessage is Empty
+        Serial.println(String(iAux) + "-" + String(str[iAux]));
+        if (!isDigit(str[iAux]))
+        {
+            this->makeEmpty();
+            return false;
+        }
+        x += pow(10, y) * (str[iAux] - '0');
     }
 
-    //extract number and check if it matches len
-    int msgLen = v[0].toInt();
-
-    if (msgLen != str.length() + 2)
+    Serial.println(String(strlen(str)) + "!=" + String(x));
+    //check if matches
+    if (strlen(str) != x)
     {
-        return oldMessage();
+        this->makeEmpty();
+        return false;
     }
 
     //extract id:
-    result.id = v[1];
-
-    Serial.println("LLego1");
-
-    //extract instructions:
-    std::vector<Instruction> instructions;
-    std::vector<String> slice;
-
-    Serial.println("Sizes:");
-    Serial.println(sizeof(str));
-    Serial.println(sizeof(result));
-    Serial.println(sizeof(instructions));
-    Serial.println(sizeof(slice));
-    Serial.println(sizeof(v));
-
-    for (int i = 2; i < v.size(); i++)
+    Serial.println(F("Llego extraact id"));
+    for (sAux = ++eAux, x = 0; str[sAux] != MSG_SEP_C && str[sAux] != '\0'; ++sAux, ++x)
     {
-        Serial.println("Iter " + String(i));
-        slice = _chopString(v[i], MSG_CMD_SEP_C);
-        if (slice.size() != 2)
+        if (x >= MAX_ID_SIZE)
         {
-            return oldMessage();
+            this->makeEmpty();
+            return false;
+        }
+        else
+        {
+            this->id[x] = str[sAux];
+        }
+    }
+    if (str[sAux] != MSG_SEP_C)
+    {
+        this->makeEmpty();
+        return false;
+    }
+    else
+    {
+        this->id[x] = '\0';
+    }
+
+    Serial.println(F("Llego instructions"));
+
+    /*
+        extract instructions:
+        -x is the index for num of instructions
+        -y used as a flag to know wether we are on command or value in each Instruction
+         0 for command, 1 for value
+        -iAux to index through the instruction
+        -eAux to index the main str
+    */
+    for (eAux = ++sAux, x = 0, y = 0, iAux = 0; str[eAux] != MSG_END_C && str[eAux] != '\0'; ++eAux, ++iAux)
+    {
+        Serial.println("str[eAux]=" + String(str[eAux]) + " /x=" + x + " /y=" + y + " iAux=" + iAux);
+        if (x >= MESSAGE_MAX_INSTRUCTIONS || iAux >= INSTRUCTION_SIZE)
+        {
+            this->makeEmpty();
+            return false;
         }
 
-        instructions.push_back(Instruction(slice[0], slice[1]));
-        slice.clear();
-    }
+        //change from command to value
+        if (str[eAux] == MSG_INS_SEP_C)
+        {
+            if (y != 0)
+            {
+                this->makeEmpty();
+                return false;
+            }
+            y = 1;
+            this->value[x].command[iAux] = '\0';
+            iAux = -1;
+            continue;
+        }
+        // change to next instruction
+        else if (str[eAux] == MSG_SEP_C)
+        {
+            if (y != 1)
+            {
+                this->makeEmpty();
+                return false;
+            }
+            y = 0;
+            this->value[x].value[iAux] = '\0';
+            iAux = -1;
+            ++x;
+            continue;
+        }
+        //assign value
+        else
+        {
+            switch (y)
+            {
+            case 0:
+                this->value[x].command[iAux] = str[eAux];
+                break;
 
-    if (instructions.size() < 1)
+            case 1:
+                this->value[x].value[iAux] = str[eAux];
+                break;
+
+            default:
+                this->makeEmpty();
+                return false;
+                break;
+            }
+        }
+    }
+    if (str[eAux] != MSG_END_C)
     {
-        return oldMessage();
+        this->makeEmpty();
+        return false;
     }
+    this->value[x].value[iAux] = '\0';
 
-    //set the result message and return it
-    result.instructions = instructions;
-
-    Serial.println("salgo strtomsg");
-    result.print();
-    return result;
+    return true;
 }
 
 void Message::makeEmpty()
@@ -91,4 +172,63 @@ void Message::makeEmpty()
 bool Message::isEmpty()
 {
     return this->value[0].isEmpty();
+}
+
+unsigned char Message::len()
+{
+    if (this->isEmpty())
+    {
+        return 0;
+    }
+    unsigned char result = 3, i; //adds the {} and the 1st ;
+
+    result += strlen(this->id);
+
+    //for each command adds the ;C=V
+    for (i = 0; i < MESSAGE_MAX_INSTRUCTIONS && !this->value[i].isEmpty(); ++i)
+        result += strlen(this->value[i].command) + strlen(this->value[i].value) + 2;
+
+    //Adds the digits itself
+    i = static_cast<unsigned char>(log10(result)) + 1;
+    result += static_cast<unsigned char>(log10(i + result)) + 1;
+
+    return result;
+}
+
+bool Message::insertInstruction(const char *c, const char *v)
+{
+    if (strlen(c) > INSTRUCTION_SIZE || strlen(v) > INSTRUCTION_SIZE)
+        return false;
+
+    unsigned char i;
+    for (i = 0; i < MESSAGE_MAX_INSTRUCTIONS; ++i)
+    {
+        if (this->value[i].isEmpty())
+        {
+            strcpy(this->value[i].command, c);
+            strcpy(this->value[i].value, v);
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void Message::print()
+{
+    if (this->isEmpty())
+    {
+        Serial.println(F("Empty"));
+    }
+    else
+    {
+        Serial.print(MSG_START_C);
+        Serial.print(static_cast<int>(this->len()));
+        Serial.print(MSG_SEP_C);
+        Serial.print(this->id);
+        for (unsigned char i = 0; i < MESSAGE_MAX_INSTRUCTIONS && !this->value[i].isEmpty(); ++i)
+            this->value[i].print();
+
+        Serial.println(MSG_END_C);
+    }
 }

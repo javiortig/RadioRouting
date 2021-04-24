@@ -3,6 +3,7 @@
 #include <Arduino.h>
 #include <time.h>
 #include <SoftwareSerial.h>
+#include <math.h>
 
 #define MSG_START_C '{'
 #define MSG_END_C '}'
@@ -37,9 +38,9 @@
 #define STATIONTYPE_PULL 'L'
 #define STATIONTYPE_BOTH 'B'
 
-#define INSTRUCTION_SIZE 5 // num of chars in command and value
-#define MESSAGE_SIZE 4     //  num of instructions per message
-#define MAX_ID_SIZE 5
+#define INSTRUCTION_SIZE 5         // num of chars in command and value
+#define MESSAGE_MAX_INSTRUCTIONS 4 //  num of instructions per message
+#define MAX_ID_SIZE 7
 
 #define CHAR_ERROR 255
 
@@ -82,16 +83,27 @@ class Message
 {
 public:
     char id[MAX_ID_SIZE];
-    Instruction value[MESSAGE_SIZE];
+    Instruction value[MESSAGE_MAX_INSTRUCTIONS];
 
-    void indexOf(unsigned char *res, const char str[], const char &value, unsigned char from = 0);
+    void indexOf(unsigned char *res, const char str[], const char &value);
 
 public:
     //Modifies this object from a received string
     bool strToMessage(const char str[]);
-    void messageToString(char *str_out);
+
+    //Writes the actual message in the given string str_out. Returns empty of failed
+    //void messageToString(char *str_out);
 
     //Makes this object empty
     void makeEmpty();
     bool isEmpty();
+
+    bool insertInstruction(const char *c, const char *v);
+
+    void print();
+
+    unsigned char len();
+
+    Message();
+    Message(const char *str);
 };
