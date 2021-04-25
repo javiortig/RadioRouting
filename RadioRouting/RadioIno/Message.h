@@ -38,63 +38,92 @@
 #define STATIONTYPE_PULL 'L'
 #define STATIONTYPE_BOTH 'B'
 
-#define INSTRUCTION_SIZE 5         // num of chars in command and value
-#define MESSAGE_MAX_INSTRUCTIONS 4 //  num of instructions per message
-#define MAX_ID_SIZE 7
+// #define INSTRUCTION_SIZE 5         // num of chars in command and value
+// #define MESSAGE_MAX_INSTRUCTIONS 4 //  num of instructions per message
+// #define MAX_ID_SIZE 7
 
 #define CHAR_ERROR 255
 
-struct Instruction
-{
-    char command[INSTRUCTION_SIZE];
-    char value[INSTRUCTION_SIZE];
+// struct Instruction
+// {
+//     char command[INSTRUCTION_SIZE];
+//     char value[INSTRUCTION_SIZE];
 
-    bool isEmpty()
-    {
-        return (this->command[0] == '\0' && this->value[0] == '\0') ? true : false;
-    }
+//     bool isEmpty()
+//     {
+//         return (this->command[0] == '\0' && this->value[0] == '\0') ? true : false;
+//     }
 
-    void makeEmpty()
-    {
-        this->command[0] = '\0';
-        this->value[0] = '\0';
-    }
+//     void makeEmpty()
+//     {
+//         this->command[0] = '\0';
+//         this->value[0] = '\0';
+//     }
 
-    void print()
-    {
-        unsigned char i;
+//     void print()
+//     {
+//         unsigned char i;
 
-        if (this->isEmpty())
-            return;
+//         if (this->isEmpty())
+//             return;
 
-        Serial.print(MSG_SEP_C);
-        Serial.print(this->command);
-        Serial.print(MSG_INS_SEP_C);
-        Serial.print(this->value);
-    }
+//         Serial.print(MSG_SEP_C);
+//         Serial.print(this->command);
+//         Serial.print(MSG_INS_SEP_C);
+//         Serial.print(this->value);
+//     }
 
-    Instruction()
-    {
-        this->makeEmpty();
-    }
-};
+//     Instruction()
+//     {
+//         this->makeEmpty();
+//     }
+// };
+
+// class Message
+// {
+// public:
+//         char id[MAX_ID_SIZE];
+//         Instruction value[MESSAGE_MAX_INSTRUCTIONS];
+
+//         void indexOf(unsigned char *res, const char str[], const char &value);
+
+//     public:
+//         Modifies this object from a received string
+//         bool strToMessage(const char str[]);
+
+//         Writes the actual message in the given string str_out. Returns empty of failed
+//         void messageToString(char *str_out);
+
+//         Makes this object empty
+//         void makeEmpty();
+//         bool isEmpty();
+
+//         bool insertInstruction(const char *c, const char *v);
+
+//         void print();
+
+//         unsigned char len();
+
+//         Message();
+//         Message(const char *str);
+// };
+
+#define MSG_SIZE 40
 
 class Message
 {
 public:
-    char id[MAX_ID_SIZE];
-    Instruction value[MESSAGE_MAX_INSTRUCTIONS];
+    char value[MSG_SIZE];
+    char *sIndex;
+    char *eIndex;
 
-    void indexOf(unsigned char *res, const char str[], const char &value);
+    //checks if the current message contained is valid
+    bool validateMessage();
 
-public:
-    //Modifies this object from a received string
-    bool strToMessage(const char str[]);
+    //returns true if successfully found. If found, it will move sIndex to the
+    //First character of the instruction
+    bool findInstruction(const char *command);
 
-    //Writes the actual message in the given string str_out. Returns empty of failed
-    //void messageToString(char *str_out);
-
-    //Makes this object empty
     void makeEmpty();
     bool isEmpty();
 
@@ -103,7 +132,4 @@ public:
     void print();
 
     unsigned char len();
-
-    Message();
-    Message(const char *str);
 };
