@@ -1,4 +1,5 @@
 #include "Message.h"
+#define ID "PILo"
 
 Message m;
 
@@ -6,9 +7,13 @@ void setup()
 {
     Serial.begin(115200);
     delay(500);
-    strcpy(m.value, "{31;pozo;value=true;val=si;v=s}");
+    m.createDefault(MAIN_ROUTER_ID);
     m.print();
-    Serial.println(m.validateMessage());
+
+    if (m.compareId("pozo"))
+        Serial.println(F("SI"));
+    else
+        Serial.println(F("NO"));
 }
 
 void loop()

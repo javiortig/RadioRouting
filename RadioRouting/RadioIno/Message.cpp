@@ -8,7 +8,6 @@ bool Message::validateMessage()
 
     if (this->value[0] != MSG_START_C)
         return false;
-
     //check that msgLen matches
     for (x = 1; *eIndex != MSG_SEP_C; ++x, ++eIndex)
     {
@@ -73,9 +72,161 @@ bool Message::validateMessage()
     return true;
 }
 
+bool Message::findInstruction(const char *command)
+{
+    unsigned char x;
+    //skip len and id
+    for (x = 0, sIndex = value; x < 2; ++sIndex)
+    {
+        if (*sIndex == MSG_SEP_C)
+        {
+            ++x;
+        }
+    }
+
+    for (eIndex = sIndex, x = 0; *eIndex != '\0'; ++eIndex)
+    {
+        if (command[x] == '\0' && *eIndex == MSG_INS_SEP_C)
+        {
+            sIndex = eIndex + 1;
+            for (++eIndex; *eIndex != MSG_END_C && *eIndex != MSG_SEP_C; ++eIndex)
+                ;
+            return true;
+        }
+
+        if (*eIndex == command[x])
+        {
+            ++x;
+        }
+        else
+        {
+            x = 0;
+        }
+    }
+
+    return false;
+}
+
+void Message::createDefault(const char *id)
+{
+    /*
+        {999;id}
+        sIndex to index value
+        eIndex to index id
+    */
+    sIndex = value;
+    *sIndex = MSG_START_C;
+    for (++sIndex; sIndex - value < MSG_LEN_LEN + 1; ++sIndex)
+    {
+        *sIndex = '1';
+    }
+    *sIndex = MSG_SEP_C;
+    for (++sIndex, eIndex = (char *)id; *eIndex != '\0'; ++sIndex, ++eIndex)
+    {
+        *sIndex = *eIndex;
+    }
+
+    *sIndex = MSG_END_C;
+    ++sIndex;
+    *sIndex = '\0';
+}
+
+bool Message::insertInstruction(const char *c, const char *v)
+{
+    unsigned char i, j;
+
+    //i to make sure we dont pass the MSG_SIZE.
+    //sIndex to track where MSG_END_C was in chase we need to redo
+    //j to loop c and v
+    for (i = 0; value[i] != MSG_END_C; ++i)
+        ;
+    value[i] = MSG_SEP_C;
+
+    //copy command.
+    for (sIndex = value + i++, j = 0; c[j] != '\0'; ++i, ++j)
+    {
+        if (i >= MSG_SIZE)
+        {
+            *sIndex = MSG_END_C;
+            *(sIndex + 1) = '\0';
+            return false;
+        }
+        else
+        {
+            value[i] = c[j];
+        }
+    }
+
+    //copy the = character
+    if (i >= MSG_SIZE)
+    {
+        *sIndex = MSG_END_C;
+        *(sIndex + 1) = '\0';
+        return false;
+    }
+    value[i] = MSG_INS_SEP_C;
+
+    //copy value.
+    for (++i, j = 0; v[j] != '\0'; ++i, ++j)
+    {
+        if (i >= MSG_SIZE)
+        {
+            *sIndex = MSG_END_C;
+            *(sIndex + 1) = '\0';
+            return false;
+        }
+        else
+        {
+            value[i] = v[j];
+        }
+    }
+    if (i >= MSG_SIZE + 1)
+    {
+        *sIndex = MSG_END_C;
+        *(sIndex + 1) = '\0';
+        return false;
+    }
+
+    value[i] = MSG_END_C;
+    value[++i] = '\0';
+
+    /*
+        i for strlen
+        eIndex to index the value arr
+    */
+    i = strlen(this->value);
+    for (eIndex = this->value + MSG_LEN_LEN; eIndex > this->value; --eIndex, i /= 10)
+    {
+        *eIndex = (i % 10) + '0';
+    }
+
+    return true;
+}
+
 void Message::print()
 {
     Serial.println(this->value);
+}
+
+bool Message::isEmpty()
+{
+    return this->value[0] == '\0';
+}
+
+bool Message::compareId(const char *str)
+{
+    if (this->isEmpty())
+        return false;
+
+    eIndex = value;
+    while (*eIndex != MSG_SEP_C)
+        ++eIndex;
+
+    sIndex = ++eIndex;
+    while (*eIndex != MSG_SEP_C && *eIndex != MSG_END_C)
+        ++eIndex;
+
+    return (!strncmp(sIndex, str, strlen(MAIN_ROUTER_ID)));
 }
 
 // Message::Message()

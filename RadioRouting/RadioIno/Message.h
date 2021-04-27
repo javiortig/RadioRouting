@@ -25,24 +25,47 @@
 #define NEW_INS_VALUE_BOTH "BOTH"
 #define NEW_INS_VALUE_UNDEFINED "UNDF"
 
-#define EMPTY_INSTRUCTION ""
-
-#define TWH_DEFAULT_INS_VALUE 0
+#define EMPTY_INSTRUCTION_VALUE "E"
 
 /*
+    len has always 3 digits
     {len;id;CMD=VALUE;CMD=VALUE}
 */
 
-#define STATIONTYPE_UNDEF 'U'
-#define STATIONTYPE_PUSH 'S'
-#define STATIONTYPE_PULL 'L'
-#define STATIONTYPE_BOTH 'B'
-
-// #define INSTRUCTION_SIZE 5         // num of chars in command and value
-// #define MESSAGE_MAX_INSTRUCTIONS 4 //  num of instructions per message
-// #define MAX_ID_SIZE 7
+#define MAIN_ROUTER_ID "RTR"
 
 #define CHAR_ERROR 255
+
+#define MSG_SIZE 40
+#define MSG_LEN_LEN 3
+
+class Message
+{
+public:
+    char value[MSG_SIZE];
+    char *sIndex;
+    char *eIndex;
+
+    //checks if the current message contained is valid
+    bool validateMessage();
+
+    //returns true if successfully found. If found, it will move sIndex to the
+    //First character of the instructions value and eIndex to the end non-inclusive
+    bool findInstruction(const char *command);
+
+    void makeEmpty();
+    bool isEmpty();
+
+    //writes in value the default message of the given id with no instruction.
+    // An Instruction must be inserted before trying sending this message
+    void createDefault(const char *id);
+    bool insertInstruction(const char *c, const char *v);
+
+    void print();
+
+    //Compares the actual id of the message with the given id on str
+    bool compareId(const char *str);
+};
 
 // struct Instruction
 // {
@@ -107,29 +130,3 @@
 //         Message();
 //         Message(const char *str);
 // };
-
-#define MSG_SIZE 40
-
-class Message
-{
-public:
-    char value[MSG_SIZE];
-    char *sIndex;
-    char *eIndex;
-
-    //checks if the current message contained is valid
-    bool validateMessage();
-
-    //returns true if successfully found. If found, it will move sIndex to the
-    //First character of the instruction
-    bool findInstruction(const char *command);
-
-    void makeEmpty();
-    bool isEmpty();
-
-    bool insertInstruction(const char *c, const char *v);
-
-    void print();
-
-    unsigned char len();
-};
